@@ -8,6 +8,7 @@ UI\PCBViewer$7.class
 Logic\SyntaxManager.class
 UI\MainFrame$14.class
 UI\MainFrame$17.class
+Logic\test.class
 UI\MainFrame$6.class
 UI\PCBViewer$4.class
 Logic\State.class
