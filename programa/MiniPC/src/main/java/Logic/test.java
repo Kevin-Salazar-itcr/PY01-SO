@@ -29,22 +29,22 @@ public class test {
                 """;
 
         // Create singleton instance and process the assembly instructions
-        SyntaxManager syntaxManager = SyntaxManager.getInstance(input);
+        SyntaxManager.getInstance(input);
 
         // Verify the instructions
-        boolean valid = syntaxManager.verifyInstructions();
+        boolean valid = SyntaxManager.getInstance().verifyInstructions();
         System.out.println("All instructions are valid: " + valid);
 
         // Print bytecode and original code
         System.out.println("\nBytecode - Code:");
-        for (int i = 0; i < syntaxManager.getBinaryInstructions().size(); i++) {
-            String bytecode = syntaxManager.getBinaryInstructions().get(i);
-            String originalCode = syntaxManager.getInstructions().get(i);
+        for (int i = 0; i < SyntaxManager.getInstance().getBinaryInstructions().size(); i++) {
+            String bytecode = SyntaxManager.getInstance().getBinaryInstructions().get(i);
+            String originalCode = SyntaxManager.getInstance().getInstructions().get(i);
             System.out.println(bytecode + " - " + originalCode);
         }
 
         // Print values associated with MOV instructions
         System.out.println("\nValues associated with MOV:");
-        syntaxManager.getValues().forEach(System.out::println);
+        SyntaxManager.getInstance().getValues().forEach(System.out::println);
     }
 }

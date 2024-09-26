@@ -10,7 +10,7 @@ import java.util.Random;
  *
  * @author ksala
  */
-public class CPU {
+public final class CPU {
     private ArrayList<Process> processTable;
     private HashMap<Integer, String> memoryTable;
     private int sysSpace;
@@ -20,8 +20,8 @@ public class CPU {
     public int limSup = 0;
 
     public CPU(){
-        this.processTable = new ArrayList<Process>();
-        this.memoryTable = new HashMap<Integer, String>();
+        this.processTable = new ArrayList<>();
+        this.memoryTable = new HashMap<>();
         this.sysSpace = 10;
         this.usrSpace = 10;
         this.currentProcess = -1;
@@ -111,6 +111,7 @@ public class CPU {
         
         //setting UserMemory
         int pos = generatePosition(SyntaxManager.getInstance().getValues().size(), this.getSysSpace(), this.getUsrSpace() + getSysSpace());
+        System.out.println("posRandom: "+pos);
         SyntaxManager.getInstance().replaceValuesWithMap(pos);
         int count=pos;
         
@@ -176,16 +177,17 @@ public class CPU {
     }
     
     public void execute(String instruction){
+        System.out.println("IR->"+instruction);
         String[] set = instruction.split(" ");
         int value = 0;
         try{
-            value = Integer.valueOf(this.memoryTable.get(Integer.valueOf(set[2])));
+            String valueInTable = this.memoryTable.get(Integer.valueOf(set[2]));
+            value = Integer.parseInt(valueInTable);
         }
         catch(Exception e){
             //some instructions doesn´t have a value at end
-            
         }
-        
+        System.out.println("valor final: "+value);
         processTable.get(currentProcess).executeInstruction(set[0], set[1], value);
     }
     

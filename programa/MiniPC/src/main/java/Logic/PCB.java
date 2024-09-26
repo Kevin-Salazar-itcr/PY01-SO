@@ -15,6 +15,7 @@ public class PCB {
     private int AC;
     private String IR;
     private int PCStart;
+    private int PCEnd;
     private int AX;
     private int BX;
     private int CX;
@@ -31,6 +32,7 @@ public class PCB {
         this.DX = 0;
         this.IR = "0";
         this.PCStart = this.PC;
+        this.PCEnd = 0; //not implemented yet
     }
 
     public int getAX() {

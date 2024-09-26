@@ -52,74 +52,75 @@ public class Process {
     }
     
     public void executeInstruction(String instruction, String register, int value){
-        System.out.println(instruction+"\n"+register+"\n"+value);
-        if(instruction.equals("001")){ //load
-            if(register.equals("00")){ //AX
+        System.out.println(instruction+"\n"+register+"\n"+value+"\n");
+        if(instruction.equals("0000")){ //load
+            if(register.equals("0000")){ //AX
                 this.ownPCB.setAC(this.ownPCB.getAX());
+                System.out.println("currAC: "+this.ownPCB.getAC());
             }
-            else if(register.equals("01")){ //BX
+            else if(register.equals("0001")){ //BX
                 this.ownPCB.setAC(this.ownPCB.getBX());
             }
-            else if(register.equals("10")){ //CX
+            else if(register.equals("0010")){ //CX
                 this.ownPCB.setAC(this.ownPCB.getCX());
             }
             else{ //DX
                 this.ownPCB.setAC(this.ownPCB.getDX());
             }
         }
-        else if(instruction.equals("010")){ //store
-            if(register.equals("00")){ //AX
+        else if(instruction.equals("0001")){ //store
+            if(register.equals("0000")){ //AX
                 this.ownPCB.setAX(this.ownPCB.getAC());
             }
-            else if(register.equals("01")){ //BX
+            else if(register.equals("0001")){ //BX
                 this.ownPCB.setBX(this.ownPCB.getAC());
             }
-            else if(register.equals("10")){ //CX
+            else if(register.equals("0010")){ //CX
                 this.ownPCB.setCX(this.ownPCB.getAC());
             }
             else{ //DX
                 this.ownPCB.setDX(this.ownPCB.getAC());
             }
         }
-        else if(instruction.equals("100")){ //sub
-            if(register.equals("00")){ //AX
+        else if(instruction.equals("0011")){ //sub
+            if(register.equals("0000")){ //AX
                 this.ownPCB.setAC(this.ownPCB.getAC()-this.ownPCB.getAX());
             }
-            else if(register.equals("01")){ //BX
+            else if(register.equals("0001")){ //BX
                 this.ownPCB.setAC(this.ownPCB.getAC()-this.ownPCB.getBX());
             }
-            else if(register.equals("10")){ //CX
+            else if(register.equals("0010")){ //CX
                 this.ownPCB.setAC(this.ownPCB.getAC()-this.ownPCB.getCX());
             }
             else{ //DX
                 this.ownPCB.setAC(this.ownPCB.getAC()-this.ownPCB.getDX());
             }
         }
-        else if(instruction.equals("101")){ //add
-            if(register.equals("00")){ //AX
+        else if(instruction.equals("0010")){ //add
+            if(register.equals("0000")){ //AX
                 this.ownPCB.setAC(this.ownPCB.getAC()+this.ownPCB.getAX());
             }
-            else if(register.equals("01")){ //BX
+            else if(register.equals("0001")){ //BX
                 this.ownPCB.setAC(this.ownPCB.getAC()+this.ownPCB.getBX());
             }
-            else if(register.equals("10")){ //CX
+            else if(register.equals("0010")){ //CX
                 this.ownPCB.setAC(this.ownPCB.getAC()+this.ownPCB.getCX());
             }
             else{ //DX
                 this.ownPCB.setAC(this.ownPCB.getAC()+this.ownPCB.getDX());
             }
         }
-        else if(instruction.equals("011")){ //mov
-            if(register.equals("00")){ //AX
+        else if(instruction.equals("0100")){ //mov
+            if(register.equals("0000")){ //AX
                 this.ownPCB.setAX(value);
             }
-            else if(register.equals("01")){ //BX
+            else if(register.equals("0001")){ //BX
                 this.ownPCB.setBX(value);
             }
-            else if(register.equals("10")){ //CX
+            else if(register.equals("0010")){ //CX
                 this.ownPCB.setCX(value);
             }
-            else if(register.equals("11")){ //DX
+            else if(register.equals("0011")){ //DX
                 this.ownPCB.setDX(value);
             }
             else{ //AC

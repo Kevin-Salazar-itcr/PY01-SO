@@ -21,7 +21,10 @@ public class SyntaxManager {
      * @param input Assembly code input as a string.
      */
     private SyntaxManager(String input) {
-        this.instructions = new ArrayList<>(Arrays.asList(input.split("\\n")));
+        this.instructions = new ArrayList<>();
+        for (String line : input.split("\\n")) {
+            this.instructions.add(line.substring(0, line.length() - 1));
+        }
         this.binaryInstructions = new ArrayList<>();
         this.values = new ArrayList<>();
         convertInstructionsToBinary();
@@ -50,7 +53,6 @@ public class SyntaxManager {
         return values;
     }
 
-    
     /**
      * Verifies if the assembly instructions are correctly formatted.
      *
@@ -220,9 +222,11 @@ public class SyntaxManager {
 
         for (int i = 0; i < binaryInstructions.size(); i++) {
             String curr = binaryInstructions.get(i);
-            if (curr.length() > 7) {
-                String a = curr.substring(0, 7);
-                int b = Integer.parseInt(curr.substring(7, curr.length()));
+            System.out.println(curr);
+            System.out.println(curr.length());
+            if (curr.length() > 9) {
+                String a = curr.substring(0, 10);
+                int b = Integer.parseInt(curr.substring(10, curr.length()));
                 String c = a + String.valueOf(getKeyByValue(map, b));
                 binaryInstructions.set(i, c);
             }
