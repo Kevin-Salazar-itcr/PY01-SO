@@ -18,7 +18,6 @@ public final class CPU {
     public int currentProcess;
     public int limInf = 0;
     public int limSup = 0;
-    private int listenedValue = 0;
 
     public CPU(){
         this.processTable = new ArrayList<>();
@@ -166,7 +165,7 @@ public final class CPU {
     public Process run(){
         processTable.get(currentProcess).update(State.RUNNING);
         execute(this.memoryTable.get(processTable.get(currentProcess).ownPCB.getPC()));
-        
+        System.out.println("executing:"+this.memoryTable.get(processTable.get(currentProcess).ownPCB.getPC()));
         return processTable.get(currentProcess);
     }
     
@@ -181,9 +180,7 @@ public final class CPU {
     }
     
     public void listen(int value){
-        this. listenedValue = value; //esta de más
         processTable.get(currentProcess).ownPCB.setDX(value);
-        forwardStep();
     }
     
     public void execute(String instruction){
@@ -210,7 +207,6 @@ public final class CPU {
     public Process forwardStep(){
         String instruction = this.memoryTable.get(processTable.get(currentProcess).ownPCB.getPC()+1);
         processTable.get(currentProcess).next(instruction);
-        
         execute(instruction);
         
         //System.out.println(processTable.get(currentProcess));

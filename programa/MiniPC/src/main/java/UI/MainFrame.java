@@ -605,7 +605,6 @@ public final class MainFrame extends javax.swing.JFrame {
     private void bxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bxActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_bxActionPerformed
-
     
     private void cxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cxActionPerformed
         // TODO add your handling code here:
@@ -673,7 +672,6 @@ public final class MainFrame extends javax.swing.JFrame {
         this.fw.setEnabled(true);
         
         Logic.Process current = this.cpu.run();
-        //System.out.println(current.toString());
         this.pc.setText(String.valueOf(current.ownPCB.getPC()));
         this.ir.setText(current.ownPCB.getIR());
         this.PCBV.pc.setText(String.valueOf(current.ownPCB.getPC()));
@@ -697,6 +695,7 @@ public final class MainFrame extends javax.swing.JFrame {
         this.cpu.listen(value);
         step();
     }
+    
     public void step(){
         int limSup = this.cpu.limSup;
         if(Integer.parseInt(this.pc.getText())==limSup){
@@ -748,6 +747,7 @@ public final class MainFrame extends javax.swing.JFrame {
             this.ac.setText(String.valueOf(current.ownPCB.getAC()));
         }
     }
+    
     private void fwActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fwActionPerformed
         step();
     }//GEN-LAST:event_fwActionPerformed

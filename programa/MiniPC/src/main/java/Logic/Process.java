@@ -40,6 +40,10 @@ public class Process {
         ownPCB.setIR(Instruction);
     }
     
+    /**
+     * updates the PC & IR registers
+     * @param Instruction 
+     */
     public void next(String Instruction){
         ownPCB.setPC(ownPCB.getPC()+1);
         ownPCB.setIR(Instruction);
@@ -51,6 +55,12 @@ public class Process {
         ownPCB.cleanRegisters();
     }
     
+    /**
+     * Executes an instruccion of the process
+     * @param instruction the instruction to receive
+     * @param register the register(s) to modify
+     * @param value optional value, it depends of the executed instruction if it's needed
+     */
     public void executeInstruction(String instruction, String register, int value) {
         int registerValue = switch (register) {
             case "0000" -> this.ownPCB.getAX();
