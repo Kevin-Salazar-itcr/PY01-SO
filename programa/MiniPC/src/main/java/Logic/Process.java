@@ -27,7 +27,7 @@ public class Process {
         this.fileContent = fileContent;
     }
     
-    public void fillFileContent(String file){
+    public final void fillFileContent(String file){
         setFileContent(new ArrayList<>(Arrays.asList(file.split("\n"))));
     }
 
@@ -35,6 +35,7 @@ public class Process {
         ownPCB.setState(state);
     }
     
+    @Deprecated
     public void previous(String Instruction){
         ownPCB.setPC(ownPCB.getPC()-1);
         ownPCB.setIR(Instruction);
@@ -141,7 +142,5 @@ public class Process {
     @Override
     public String toString() {
         return "Process{" + "fileContent=" + fileContent + ", ownPCB=" + ownPCB + '}';
-    }
-    
-    
+    }   
 }

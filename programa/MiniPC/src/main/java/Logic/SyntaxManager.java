@@ -30,9 +30,7 @@ public class SyntaxManager {
     }
 
     public static SyntaxManager getInstance(String input) {
-        if (instance == null) {
-            instance = new SyntaxManager(input);
-        }
+        instance = new SyntaxManager(input);
         return instance;
     }
 
