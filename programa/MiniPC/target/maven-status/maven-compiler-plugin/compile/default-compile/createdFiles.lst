@@ -3,6 +3,7 @@ UI\PCBViewer$2.class
 UI\MainFrame$12.class
 UI\MainFrame$8.class
 UI\PCBViewer$9.class
+UI\Terminal.class
 UI\MainFrame$19.class
 UI\PCBViewer$7.class
 Logic\SyntaxManager.class
@@ -20,12 +21,16 @@ UI\PCBViewer.class
 UI\MainFrame$11.class
 UI\MainFrame$5.class
 Logic\Process.class
+UI\Terminal$1.class
 UI\MainFrame$16.class
+UI\MainFrame$21.class
 UI\MainFrame$7.class
 Logic\CPU.class
 UI\PCBViewer$8.class
 UI\MainFrame$13.class
 UI\PCBViewer$3.class
+UI\CLI.class
+UI\CLI$1.class
 UI\MainFrame$2.class
 UI\MainFrame$18.class
 UI\Config$1.class

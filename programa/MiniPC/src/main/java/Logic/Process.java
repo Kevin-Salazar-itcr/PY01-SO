@@ -51,87 +51,83 @@ public class Process {
         ownPCB.cleanRegisters();
     }
     
-    public void executeInstruction(String instruction, String register, int value){
-        System.out.println(instruction+"\n"+register+"\n"+value+"\n");
-        if(instruction.equals("0000")){ //load
-            if(register.equals("0000")){ //AX
-                this.ownPCB.setAC(this.ownPCB.getAX());
-                System.out.println("currAC: "+this.ownPCB.getAC());
+    public void executeInstruction(String instruction, String register, int value) {
+        int registerValue = switch (register) {
+            case "0000" -> this.ownPCB.getAX();
+            case "0001" -> this.ownPCB.getBX();
+            case "0010" -> this.ownPCB.getCX();
+            case "0011" -> this.ownPCB.getDX();
+            default -> 0;
+        };
+
+        switch (instruction) {
+            case "0000" -> { // load
+                this.ownPCB.setAC(registerValue);
             }
-            else if(register.equals("0001")){ //BX
-                this.ownPCB.setAC(this.ownPCB.getBX());
+            case "0001" -> { // store
+                setRegisterValue(register, this.ownPCB.getAC());
             }
-            else if(register.equals("0010")){ //CX
-                this.ownPCB.setAC(this.ownPCB.getCX());
+            case "0010" -> { // add
+                this.ownPCB.setAC(this.ownPCB.getAC() + registerValue);
             }
-            else{ //DX
-                this.ownPCB.setAC(this.ownPCB.getDX());
+            case "0011" -> { // sub
+                this.ownPCB.setAC(this.ownPCB.getAC() - registerValue);
             }
-        }
-        else if(instruction.equals("0001")){ //store
-            if(register.equals("0000")){ //AX
-                this.ownPCB.setAX(this.ownPCB.getAC());
+            case "0100" -> { // mov
+                setRegisterValue(register, value);
             }
-            else if(register.equals("0001")){ //BX
-                this.ownPCB.setBX(this.ownPCB.getAC());
+            case "0101" -> { // inc
+                if (register.equals("0111")) { // AC
+                    this.ownPCB.setAC(this.ownPCB.getAC() + 1);
+                } else {
+                    setRegisterValue(register, registerValue + 1);
+                }
             }
-            else if(register.equals("0010")){ //CX
-                this.ownPCB.setCX(this.ownPCB.getAC());
+            case "0110" -> { // dec
+                if (register.equals("0111")) { // AC
+                    this.ownPCB.setAC(this.ownPCB.getAC() - 1);
+                } else {
+                    setRegisterValue(register, registerValue - 1);
+                }
             }
-            else{ //DX
-                this.ownPCB.setDX(this.ownPCB.getAC());
+            case "0111" -> { // swap
+                // Extract both registers from the input format
+                String[] regs = register.split(",");
+                int reg1Value = getRegisterValue(regs[0]);
+                int reg2Value = getRegisterValue(regs[1]);
+
+                // Swap values
+                setRegisterValue(regs[0], reg2Value);
+                setRegisterValue(regs[1], reg1Value);
             }
-        }
-        else if(instruction.equals("0011")){ //sub
-            if(register.equals("0000")){ //AX
-                this.ownPCB.setAC(this.ownPCB.getAC()-this.ownPCB.getAX());
+            case "1000" -> { //int
+                String[] regs = register.split(",");
+                System.out.println("interruption in progress0");
             }
-            else if(register.equals("0001")){ //BX
-                this.ownPCB.setAC(this.ownPCB.getAC()-this.ownPCB.getBX());
-            }
-            else if(register.equals("0010")){ //CX
-                this.ownPCB.setAC(this.ownPCB.getAC()-this.ownPCB.getCX());
-            }
-            else{ //DX
-                this.ownPCB.setAC(this.ownPCB.getAC()-this.ownPCB.getDX());
-            }
-        }
-        else if(instruction.equals("0010")){ //add
-            if(register.equals("0000")){ //AX
-                this.ownPCB.setAC(this.ownPCB.getAC()+this.ownPCB.getAX());
-            }
-            else if(register.equals("0001")){ //BX
-                this.ownPCB.setAC(this.ownPCB.getAC()+this.ownPCB.getBX());
-            }
-            else if(register.equals("0010")){ //CX
-                this.ownPCB.setAC(this.ownPCB.getAC()+this.ownPCB.getCX());
-            }
-            else{ //DX
-                this.ownPCB.setAC(this.ownPCB.getAC()+this.ownPCB.getDX());
-            }
-        }
-        else if(instruction.equals("0100")){ //mov
-            if(register.equals("0000")){ //AX
-                this.ownPCB.setAX(value);
-            }
-            else if(register.equals("0001")){ //BX
-                this.ownPCB.setBX(value);
-            }
-            else if(register.equals("0010")){ //CX
-                this.ownPCB.setCX(value);
-            }
-            else if(register.equals("0011")){ //DX
-                this.ownPCB.setDX(value);
-            }
-            else{ //AC
-                this.ownPCB.setAC(value);
-            }
-        }
-        else{
-            System.out.println("DO NOTHING");
+            default -> System.out.println("DO NOTHING");
         }
     }
-    
+
+    private void setRegisterValue(String register, int value) {
+        switch (register) {
+            case "0000" -> this.ownPCB.setAX(value);
+            case "0001" -> this.ownPCB.setBX(value);
+            case "0010" -> this.ownPCB.setCX(value);
+            case "0011" -> this.ownPCB.setDX(value);
+            default -> this.ownPCB.setAC(value);
+        }
+    }
+
+    private int getRegisterValue(String register) {
+        return switch (register) {
+            case "0000" -> this.ownPCB.getAX();
+            case "0001" -> this.ownPCB.getBX();
+            case "0010" -> this.ownPCB.getCX();
+            case "0011" -> this.ownPCB.getDX();
+            default -> this.ownPCB.getAC();
+        };
+    }
+
     @Override
     public String toString() {
         return "Process{" + "fileContent=" + fileContent + ", ownPCB=" + ownPCB + '}';

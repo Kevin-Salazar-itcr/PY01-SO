@@ -4,7 +4,6 @@
  */
 package UI;
 
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
@@ -40,8 +39,6 @@ public class Config extends javax.swing.JFrame {
         usr = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jLabel1.setText("Preferences");
 

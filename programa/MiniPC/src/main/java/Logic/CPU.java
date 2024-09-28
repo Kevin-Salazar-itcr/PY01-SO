@@ -18,6 +18,7 @@ public final class CPU {
     public int currentProcess;
     public int limInf = 0;
     public int limSup = 0;
+    private int listenedValue = 0;
 
     public CPU(){
         this.processTable = new ArrayList<>();
@@ -108,10 +109,13 @@ public final class CPU {
      */ 
     public void addProcess(Process p){
         ArrayList<String> l = SyntaxManager.getInstance().getBinaryInstructions();
-        
+        System.out.println("*******");
+        for(String str: l){
+            System.out.println(str);
+        }
+        System.out.println("*******");
         //setting UserMemory
         int pos = generatePosition(SyntaxManager.getInstance().getValues().size(), this.getSysSpace(), this.getUsrSpace() + getSysSpace());
-        System.out.println("posRandom: "+pos);
         SyntaxManager.getInstance().replaceValuesWithMap(pos);
         int count=pos;
         
@@ -143,7 +147,7 @@ public final class CPU {
         setSysSpace(10);
         setUsrSpace(10);
         configureMemory();
-        setProcessTable(new ArrayList<Process>());
+        setProcessTable(new ArrayList<>());
         currentProcess = 0;
     }
     
@@ -151,7 +155,7 @@ public final class CPU {
         setSysSpace(sys);
         setUsrSpace(usr);
         configureMemory();
-        setProcessTable(new ArrayList<Process>());
+        setProcessTable(new ArrayList<>());
         currentProcess = -1;
     }
     
@@ -176,10 +180,17 @@ public final class CPU {
         processTable.get(currentProcess).update(State.FINISHED);
     }
     
+    public void listen(int value){
+        this. listenedValue = value; //esta de más
+        processTable.get(currentProcess).ownPCB.setDX(value);
+        forwardStep();
+    }
+    
     public void execute(String instruction){
-        System.out.println("IR->"+instruction);
         String[] set = instruction.split(" ");
         int value = 0;
+        String instr = set[0];
+        String reg = "";
         try{
             String valueInTable = this.memoryTable.get(Integer.valueOf(set[2]));
             value = Integer.parseInt(valueInTable);
@@ -187,8 +198,13 @@ public final class CPU {
         catch(Exception e){
             //some instructions doesn´t have a value at end
         }
-        System.out.println("valor final: "+value);
-        processTable.get(currentProcess).executeInstruction(set[0], set[1], value);
+        try{
+            reg = instr.equals("0111") ? set[1]+","+set[2]: instr.equals("1000")? set[1]+","+set[2]: set[1];
+        }
+        catch(Exception e){
+            //some instructions doesn´t have a value at end
+        }
+        processTable.get(currentProcess).executeInstruction(instr, reg, value);
     }
     
     public Process forwardStep(){
@@ -197,7 +213,7 @@ public final class CPU {
         
         execute(instruction);
         
-        System.out.println(processTable.get(currentProcess));
+        //System.out.println(processTable.get(currentProcess));
         return processTable.get(currentProcess);
     }
     

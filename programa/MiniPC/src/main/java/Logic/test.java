@@ -11,22 +11,7 @@ package Logic;
 public class test {
     public static void main(String[] args) {
         // Sample assembly instructions
-        String input = """
-                LOAD AX
-                STORE BX
-                ADD CX
-                SUB DX
-                MOV AX, 100
-                INC AX
-                SWAP BX, CX
-                CMP AX, BX
-                JNE 5
-                inc
-                PARAM 5, 10, -3
-                PUSH DX
-                POP AX
-                INT 20H
-                """;
+        String input = "LOAD AX\nSTORE BX\nADD CX\nSUB DX\nMOV AX, 100\nINC AX\nSWAP BX, CX\nCMP AX, BX\nJNE 5\ninc\nPARAM 5, 10, -3\nPUSH DX\nPOP AX\nINT 20H\n";
 
         // Create singleton instance and process the assembly instructions
         SyntaxManager.getInstance(input);

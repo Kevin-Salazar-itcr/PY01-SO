@@ -1,7 +1,6 @@
 package Logic;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -75,7 +74,6 @@ public class SyntaxManager {
 
         for (String line : instructions) {
             boolean matches = pattern.matcher(line.toUpperCase()).matches();
-            System.out.println("Instruction: " + line + " | Matches: " + matches);
             if (!matches) {
                 allMatch = false;
             }
@@ -105,7 +103,6 @@ public class SyntaxManager {
      */
     private String convertToBinary(String line) {
         String[] parts = line.replace(",", "").split("\\s+");
-       
         String instruction = parts[0];
         String opcode = getInstructionBinary(instruction);
         if (opcode.equals("1111")) {
@@ -115,10 +112,11 @@ public class SyntaxManager {
         // Handle MOV with immediate values
         if (instruction.matches("^(MOV|CMP|SWAP)$")) {
             String register = getRegisterBinary(parts[1]);
+            
             try{
                 values.add(Integer.valueOf(parts[2]));
             }
-            catch(NumberFormatException e){
+            catch(Exception e){
                 return opcode + " " + register + " " + getRegisterBinary(parts[2]);
             }
             return opcode + " " + register + " " + parts[2]; // MOV with immediate value
@@ -141,8 +139,15 @@ public class SyntaxManager {
             for(int i=1; i<parts.length;i++){
                 params+= parts[i]+" ";
             }
-            return opcode + " " + params;
-            
+            return opcode + " " + params;   
+        }
+        else if (parts[0].equals("INT")){
+            switch(parts[1]){
+                case "09H"->{return opcode + " 0011 0001";} //input
+                case "10H"->{return opcode + " 0011 0010";} //print
+                case "20H"->{return opcode + " 0011 0011";} //std exit        
+                default -> {return null;}
+            }
         }
         
         return null; // Unsupported format
@@ -222,9 +227,7 @@ public class SyntaxManager {
 
         for (int i = 0; i < binaryInstructions.size(); i++) {
             String curr = binaryInstructions.get(i);
-            System.out.println(curr);
-            System.out.println(curr.length());
-            if (curr.length() > 9) {
+            if (curr.length() > 9 && curr.startsWith("0100")) {
                 String a = curr.substring(0, 10);
                 int b = Integer.parseInt(curr.substring(10, curr.length()));
                 String c = a + String.valueOf(getKeyByValue(map, b));

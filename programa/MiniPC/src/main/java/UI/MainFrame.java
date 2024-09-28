@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
  *
  * @author ksala
  */
-public class MainFrame extends javax.swing.JFrame {
+public final class MainFrame extends javax.swing.JFrame {
 
     /**
      * Creates new form MainFrame
@@ -24,12 +24,15 @@ public class MainFrame extends javax.swing.JFrame {
     public Config config;
     public PCBViewer PCBV;
     public CPU cpu;
+    public Terminal cli;
     public MainFrame() {
         this.config = new Config(this);
         this.config.setVisible(false); 
         this.PCBV = new PCBViewer();
         this.PCBV.setVisible(false);
         this.cpu = new CPU();
+        this.cli = new Terminal(this);
+        this.cli.setVisible(false);
         
         initComponents();
         setMemory();
@@ -87,6 +90,7 @@ public class MainFrame extends javax.swing.JFrame {
         jMenu3 = new javax.swing.JMenu();
         compileOp = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
         jMenuItem14 = new javax.swing.JMenuItem();
 
@@ -428,6 +432,15 @@ public class MainFrame extends javax.swing.JFrame {
         });
         jMenu3.add(jMenuItem1);
 
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jMenuItem2.setText("Terminal");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem2);
+
         jMenuBar1.add(jMenu3);
 
         jMenu4.setText("Help");
@@ -552,7 +565,6 @@ public class MainFrame extends javax.swing.JFrame {
             File file = fileChooser.getSelectedFile();
             try {
                 String content = new String(Files.readAllBytes(file.toPath()));
-                System.out.println(content);
                 if(!SyntaxManager.getInstance(content).verifyInstructions()){
                     JOptionPane.showMessageDialog(null, "Invalid syntax detected on file", "Error", JOptionPane.ERROR_MESSAGE);
                 }else{
@@ -661,7 +673,7 @@ public class MainFrame extends javax.swing.JFrame {
         this.fw.setEnabled(true);
         
         Logic.Process current = this.cpu.run();
-        System.out.println(current.toString());
+        //System.out.println(current.toString());
         this.pc.setText(String.valueOf(current.ownPCB.getPC()));
         this.ir.setText(current.ownPCB.getIR());
         this.PCBV.pc.setText(String.valueOf(current.ownPCB.getPC()));
@@ -680,7 +692,12 @@ public class MainFrame extends javax.swing.JFrame {
         this.ac.setText(String.valueOf(current.ownPCB.getAC()));
     }
     
-    private void fwActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fwActionPerformed
+    public void listen(int value){
+        System.out.println("Escuchando valor desde terminal: "+value);
+        this.cpu.listen(value);
+        step();
+    }
+    public void step(){
         int limSup = this.cpu.limSup;
         if(Integer.parseInt(this.pc.getText())==limSup){
             this.PCBV.state.setText("FINISHED");
@@ -694,6 +711,24 @@ public class MainFrame extends javax.swing.JFrame {
                 this.PCBV.state.setText("RUNNING");
             }
             Logic.Process current = this.cpu.forwardStep();
+            if(current.ownPCB.getIR().startsWith("1000")){
+                System.out.println("interruption in progress1");
+                
+                switch(current.ownPCB.getIR().split(" ")[2]){
+                    case "0001"->{
+                        this.cli.input();
+                        break;
+                    }case "0010"->{
+                        this.cli.print(String.valueOf(current.ownPCB.getDX()));
+                        break;
+                    }case "0011"->{
+                        break;
+                    }
+                    default->{
+                        System.out.println("not recognized...");
+                    }
+                }
+            }
             this.bw.setEnabled(true);
             this.pc.setText(String.valueOf(current.ownPCB.getPC()));
             this.ir.setText(current.ownPCB.getIR());
@@ -712,6 +747,9 @@ public class MainFrame extends javax.swing.JFrame {
             this.dx.setText(String.valueOf(current.ownPCB.getDX()));
             this.ac.setText(String.valueOf(current.ownPCB.getAC()));
         }
+    }
+    private void fwActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fwActionPerformed
+        step();
     }//GEN-LAST:event_fwActionPerformed
 
     private void bwActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bwActionPerformed
@@ -736,6 +774,10 @@ public class MainFrame extends javax.swing.JFrame {
 //            this.PCBV.ir.setText(current.ownPCB.getIR());
 //        }
     }//GEN-LAST:event_bwActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        this.cli.setVisible(true);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -800,6 +842,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem14;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
