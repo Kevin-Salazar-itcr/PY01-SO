@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -25,6 +26,8 @@ public final class MainFrame extends javax.swing.JFrame {
     public PCBViewer PCBV;
     public CPU cpu;
     public Terminal cli;
+    private boolean auto = false;
+    
     public MainFrame() {
         this.config = new Config(this);
         this.config.setVisible(false); 
@@ -39,6 +42,7 @@ public final class MainFrame extends javax.swing.JFrame {
         this.bw.setEnabled(false);
         this.fw.setEnabled(false);
         this.run.setEnabled(false);
+        this.autoButton.setVisible(false);
     }
 
     /**
@@ -66,6 +70,10 @@ public final class MainFrame extends javax.swing.JFrame {
         ac = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
         pc = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        zf = new javax.swing.JTextField();
+        sf = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -80,6 +88,7 @@ public final class MainFrame extends javax.swing.JFrame {
         bw = new javax.swing.JButton();
         fw = new javax.swing.JButton();
         run = new javax.swing.JButton();
+        autoButton = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         opOpen = new javax.swing.JMenuItem();
@@ -179,6 +188,28 @@ public final class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        jLabel9.setText("SF");
+
+        jLabel12.setText("ZF");
+
+        zf.setEditable(false);
+        zf.setText("0");
+        zf.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        zf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                zfActionPerformed(evt);
+            }
+        });
+
+        sf.setEditable(false);
+        sf.setText("0");
+        sf.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        sf.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sfActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -217,7 +248,15 @@ public final class MainFrame extends javax.swing.JFrame {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addComponent(pc, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(pc, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(zf, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(sf, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(30, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -253,7 +292,15 @@ public final class MainFrame extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(pc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(217, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(zf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sf, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(153, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
@@ -349,6 +396,13 @@ public final class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        autoButton.setText("Finish Process");
+        autoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                autoButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -364,6 +418,8 @@ public final class MainFrame extends javax.swing.JFrame {
                 .addComponent(fw, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(57, 57, 57)
                 .addComponent(run, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(59, 59, 59)
+                .addComponent(autoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
@@ -375,7 +431,8 @@ public final class MainFrame extends javax.swing.JFrame {
                     .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(bw, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(fw, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(run, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(run, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(autoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
@@ -471,7 +528,7 @@ public final class MainFrame extends javax.swing.JFrame {
                         .addGap(34, 34, 34)
                         .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(35, 35, 35)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGap(44, 44, 44))
         );
         layout.setVerticalGroup(
@@ -493,6 +550,7 @@ public final class MainFrame extends javax.swing.JFrame {
 
     private void compileOpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileOpActionPerformed
         runFile();
+        this.autoButton.setVisible(true);
     }//GEN-LAST:event_compileOpActionPerformed
 
     private void jMenuItem14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem14ActionPerformed
@@ -523,6 +581,10 @@ public final class MainFrame extends javax.swing.JFrame {
         }
         this.usrCode.setText("");
         this.PCBV = new PCBViewer();
+        this.autoButton.setEnabled(true);
+        this.autoButton.setVisible(false);
+        this.auto=false;
+        
         setMemory();
     }
     
@@ -595,7 +657,7 @@ public final class MainFrame extends javax.swing.JFrame {
     
     public void configPCB(){
         this.PCBV.state.setText("READY");
-        this.PCBV.id.setText(String.valueOf(cpu.currentProcess));
+        this.PCBV.id.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.getProcessID()));
     }
     
     private void axActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_axActionPerformed
@@ -637,6 +699,9 @@ public final class MainFrame extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         this.PCBV.state.setText("READY");
+        this.autoButton.setEnabled(true);
+        this.autoButton.setVisible(false);
+        this.auto = false;
         this.run.setEnabled(true);
         this.bw.setEnabled(false);
         this.fw.setEnabled(false);
@@ -662,7 +727,8 @@ public final class MainFrame extends javax.swing.JFrame {
 
     private void runActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runActionPerformed
         runFile();
-        
+        this.autoButton.setVisible(true);
+        this.autoButton.setEnabled(true);
     }//GEN-LAST:event_runActionPerformed
 
     public void runFile(){
@@ -693,28 +759,31 @@ public final class MainFrame extends javax.swing.JFrame {
     public void listen(int value){
         System.out.println("Escuchando valor desde terminal: "+value);
         this.cpu.listen(value);
+        this.auto = !this.autoButton.isEnabled();
         step();
     }
     
     public void step(){
-        int limSup = this.cpu.limSup;
-        if(Integer.parseInt(this.pc.getText())==limSup){
+        int limSup = this.cpu.getCurrentProcess().ownPCB.getDirEnd();
+        if(cpu.getPC()==limSup){
             this.PCBV.state.setText("FINISHED");
+            this.auto = false;
             this.cpu.finish();
             this.fw.setEnabled(false);
             this.bw.setEnabled(true);
         }
         else{
             //update current process
-            if(this.PCBV.state.getText().equals("READY")){
+            if(this.PCBV.state.getText().matches("^(READY|BLOCKED)$")){
                 this.PCBV.state.setText("RUNNING");
             }
             Logic.Process current = this.cpu.forwardStep();
+            //interruption management
             if(current.ownPCB.getIR().startsWith("1000")){
-                System.out.println("interruption in progress1");
-                
+                this.PCBV.state.setText("BLOCKED");
                 switch(current.ownPCB.getIR().split(" ")[2]){
                     case "0001"->{
+                        this.auto = false;
                         this.cli.input();
                         break;
                     }case "0010"->{
@@ -729,8 +798,8 @@ public final class MainFrame extends javax.swing.JFrame {
                 }
             }
             this.bw.setEnabled(true);
-            this.pc.setText(String.valueOf(current.ownPCB.getPC()));
-            this.ir.setText(current.ownPCB.getIR());
+            this.pc.setText(String.valueOf(cpu.getPC()));
+            this.ir.setText(cpu.getIR());
             this.PCBV.pc.setText(String.valueOf(current.ownPCB.getPC()));
             this.PCBV.ir.setText(current.ownPCB.getIR());
             
@@ -740,11 +809,20 @@ public final class MainFrame extends javax.swing.JFrame {
             this.PCBV.dx.setText(String.valueOf(current.ownPCB.getDX()));
             this.PCBV.ac.setText(String.valueOf(current.ownPCB.getAC()));
             
-            this.ax.setText(String.valueOf(current.ownPCB.getAX()));
-            this.bx.setText(String.valueOf(current.ownPCB.getBX()));
-            this.cx.setText(String.valueOf(current.ownPCB.getCX()));
-            this.dx.setText(String.valueOf(current.ownPCB.getDX()));
-            this.ac.setText(String.valueOf(current.ownPCB.getAC()));
+            this.ax.setText(String.valueOf(cpu.getAX()));
+            this.bx.setText(String.valueOf(cpu.getBX()));
+            this.cx.setText(String.valueOf(cpu.getCX()));
+            this.dx.setText(String.valueOf(cpu.getDX()));
+            this.ac.setText(String.valueOf(cpu.getAC()));
+            this.zf.setText(String.valueOf(cpu.getZeroFlag()));
+            this.sf.setText(String.valueOf(cpu.getSignFlag()));
+        }
+        if(auto){
+            this.fw.setEnabled(false);
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {}
+            SwingUtilities.invokeLater(() -> step());
         }
     }
     
@@ -754,30 +832,25 @@ public final class MainFrame extends javax.swing.JFrame {
 
     private void bwActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bwActionPerformed
         JOptionPane.showMessageDialog(null, "Work in progress here...");
-//        int limInf = this.cpu.limInf;
-//        if(Integer.parseInt(this.pc.getText())==limInf){
-//            this.PCBV.state.setText("READY");
-//            this.cpu.run();
-//            this.bw.setEnabled(false);
-//            this.fw.setEnabled(true);
-//        }
-//        else{
-//            //update current process
-//            if(this.PCBV.state.getText().equals("FINISHED")){
-//                this.PCBV.state.setText("RUNNING");
-//            }
-//            Logic.Process current = this.cpu.backwardStep();
-//            this.fw.setEnabled(true);
-//            this.pc.setText(String.valueOf(current.ownPCB.getPC()));
-//            this.ir.setText(current.ownPCB.getIR());
-//            this.PCBV.pc.setText(String.valueOf(current.ownPCB.getPC()));
-//            this.PCBV.ir.setText(current.ownPCB.getIR());
-//        }
     }//GEN-LAST:event_bwActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         this.cli.setVisible(true);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void autoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoButtonActionPerformed
+        this.auto = true;
+        this.autoButton.setEnabled(false);
+        step();
+    }//GEN-LAST:event_autoButtonActionPerformed
+
+    private void zfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zfActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_zfActionPerformed
+
+    private void sfActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sfActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_sfActionPerformed
 
     /**
      * @param args the command line arguments
@@ -816,6 +889,7 @@ public final class MainFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField ac;
+    public javax.swing.JButton autoButton;
     private javax.swing.JTextField ax;
     private javax.swing.JButton bw;
     private javax.swing.JTextField bx;
@@ -829,6 +903,7 @@ public final class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -836,6 +911,7 @@ public final class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
@@ -857,6 +933,8 @@ public final class MainFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem opSave1;
     private javax.swing.JTextField pc;
     private javax.swing.JButton run;
+    private javax.swing.JTextField sf;
     private javax.swing.JTextArea usrCode;
+    private javax.swing.JTextField zf;
     // End of variables declaration//GEN-END:variables
 }

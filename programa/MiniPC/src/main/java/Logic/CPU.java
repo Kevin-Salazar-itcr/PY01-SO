@@ -6,6 +6,7 @@ package Logic;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Stack;
 /**
  *
  * @author ksala
@@ -16,6 +17,17 @@ public final class CPU {
     private int sysSpace;
     private int usrSpace;
     public int currentProcess;
+    private int AX;
+    private int BX;
+    private int CX;
+    private int DX;
+    private int PC;
+    private int AC;
+    private String IR;
+    private int zeroFlag;
+    private int signFlag;
+    private Stack<Integer> stack;
+    
     public int limInf = 0;
     public int limSup = 0;
 
@@ -24,7 +36,7 @@ public final class CPU {
         this.memoryTable = new HashMap<>();
         this.sysSpace = 10;
         this.usrSpace = 10;
-        this.currentProcess = -1;
+        this.currentProcess = 0;
         configureMemory();
     }
 
@@ -64,7 +76,80 @@ public final class CPU {
     public void setUsrSpace(int usrSpace) {
         this.usrSpace = usrSpace;
     }
+
+    public int getAX() {
+        return AX;
+    }
+
+    public void setAX(int AX) {
+        this.AX = AX;
+    }
+
+    public int getBX() {
+        return BX;
+    }
+
+    public void setBX(int BX) {
+        this.BX = BX;
+    }
+
+    public int getCX() {
+        return CX;
+    }
+
+    public void setCX(int CX) {
+        this.CX = CX;
+    }
+
+    public int getDX() {
+        return DX;
+    }
+
+    public void setDX(int DX) {
+        this.DX = DX;
+    }
+
+    public int getPC() {
+        return PC;
+    }
+
+    public void setPC(int PC) {
+        this.PC = PC;
+    }
+
+    public int getAC() {
+        return AC;
+    }
+
+    public void setAC(int AC) {
+        this.AC = AC;
+    }
+
+    public String getIR() {
+        return IR;
+    }
+
+    public void setIR(String IR) {
+        this.IR = IR;
+    }
+
+    public int getZeroFlag() {
+        return zeroFlag;
+    }
+
+    public void setZeroFlag(int zeroFlag) {
+        this.zeroFlag = zeroFlag;
+    }
+
+    public int getSignFlag() {
+        return signFlag;
+    }
+
+    public void setSignFlag(int signFlag) {
+        this.signFlag = signFlag;
+    }
     
+    //----------------------------------------------------------------
     /**
      * Fills the memory with nullptr
      */
@@ -108,23 +193,9 @@ public final class CPU {
      */ 
     public void addProcess(Process p){
         ArrayList<String> l = SyntaxManager.getInstance().getBinaryInstructions();
-        System.out.println("*******");
-        for(String str: l){
-            System.out.println(str);
-        }
-        System.out.println("*******");
-        //setting UserMemory
-        int pos = generatePosition(SyntaxManager.getInstance().getValues().size(), this.getSysSpace(), this.getUsrSpace() + getSysSpace());
-        SyntaxManager.getInstance().replaceValuesWithMap(pos);
-        int count=pos;
-        
-        for(int val:SyntaxManager.getInstance().getValues()){
-            editHashMap(count, String.valueOf(val));
-            count++;
-        }
-                
-        pos = generatePosition(p.getFileContent().size(), 0, getSysSpace());
-        count = pos;        
+         
+        int pos = generatePosition(p.getFileContent().size(), 0, getSysSpace());
+        int count = pos;        
         this.limInf = pos;
         //setting System memory
         for(String x: SyntaxManager.getInstance().getBinaryInstructions()){
@@ -133,12 +204,54 @@ public final class CPU {
             count++;
         }
         p.ownPCB.setPC(pos);
-        p.ownPCB.setPCStart(pos);
+        p.ownPCB.setDirBase(pos);
+        p.ownPCB.setDirEnd(p.getFileContent().size()+pos-1);
         p.ownPCB.setIR(this.memoryTable.get(pos));
         this.processTable.add(p);
-        currentProcess++;
     }
     
+    //returns current process (the current is whoever that isn't finished yet in the queue)
+    public Process getCurrentProcess(){
+        for(Process p: processTable){
+            if (p.ownPCB.getState() != State.FINISHED){
+                return p;
+            }
+        }
+        return null;
+    }
+    
+    //updates the values in current process
+    public void updateProcess(State state) {
+        getCurrentProcess().ownPCB.setState(state);
+        getCurrentProcess().ownPCB.setAX(getAX());
+        getCurrentProcess().ownPCB.setBX(getBX());
+        getCurrentProcess().ownPCB.setCX(getCX());
+        getCurrentProcess().ownPCB.setDX(getDX());
+        getCurrentProcess().ownPCB.setPC(getPC());
+        getCurrentProcess().ownPCB.setAC(getAC());
+        getCurrentProcess().ownPCB.setIR(getIR());
+    }
+
+    public void changeContext(State state) {
+        getCurrentProcess().ownPCB.setState(state);
+        if(getCurrentProcess()!=null){
+            getCurrentProcess().ownPCB.setAX(getAX());
+            getCurrentProcess().ownPCB.setBX(getBX());
+            getCurrentProcess().ownPCB.setCX(getCX());
+            getCurrentProcess().ownPCB.setDX(getDX());
+            getCurrentProcess().ownPCB.setPC(getPC());
+            getCurrentProcess().ownPCB.setAC(getAC());
+            getCurrentProcess().ownPCB.setIR(getIR());
+        }
+        setAX(0);
+        setBX(0);
+        setCX(0);
+        setDX(0);
+        setPC(0);
+        setAC(0);
+        setIR("");
+    }
+
     /**
      * Resets the memory to the original state
      */
@@ -155,7 +268,7 @@ public final class CPU {
         setUsrSpace(usr);
         configureMemory();
         setProcessTable(new ArrayList<>());
-        currentProcess = -1;
+        currentProcess = 0;
     }
     
     /**
@@ -163,59 +276,246 @@ public final class CPU {
      * @return the current process
      */
     public Process run(){
-        processTable.get(currentProcess).update(State.RUNNING);
-        execute(this.memoryTable.get(processTable.get(currentProcess).ownPCB.getPC()));
-        System.out.println("executing:"+this.memoryTable.get(processTable.get(currentProcess).ownPCB.getPC()));
-        return processTable.get(currentProcess);
+        setPC(getCurrentProcess().ownPCB.getPC());
+        setIR(this.memoryTable.get(getCurrentProcess().ownPCB.getPC()));
+        execute();
+        return getCurrentProcess();
     }
     
     public Process reset(){
-        processTable.get(currentProcess).update(State.READY);
-        processTable.get(currentProcess).reset(this.memoryTable.get(processTable.get(currentProcess).ownPCB.getPCStart()));
-        return processTable.get(currentProcess);
+        setAX(0);
+        setBX(0);
+        setCX(0);
+        setDX(0);
+        setPC(getCurrentProcess().ownPCB.getDirBase());
+        setAC(0);
+        String instruction = this.memoryTable.get(getCurrentProcess().ownPCB.getDirBase());
+        setIR(instruction);
+        
+        updateProcess(State.READY);
+        
+        return getCurrentProcess();
     }
     
     public void finish(){
-        processTable.get(currentProcess).update(State.FINISHED);
+        changeContext(State.FINISHED);
+        
     }
     
+    //listens a value from terminal
     public void listen(int value){
-        processTable.get(currentProcess).ownPCB.setDX(value);
+        setDX(value);
+        getCurrentProcess().ownPCB.setDX(value);
     }
     
-    public void execute(String instruction){
-        String[] set = instruction.split(" ");
-        int value = 0;
-        String instr = set[0];
-        String reg = "";
-        try{
-            String valueInTable = this.memoryTable.get(Integer.valueOf(set[2]));
-            value = Integer.parseInt(valueInTable);
+    //prepares the execution
+    public void execute(){
+        String[] set = getIR().split(" ");
+        System.out.println(getIR());
+        
+        switch (set[0]) {
+            case "0000" -> { // load
+                executeInstruction(set[0], set[1], 0);
+            }
+            case "0001" -> { // store
+                executeInstruction(set[0], set[1], 0);
+            }
+            case "0010" -> { // add
+                executeInstruction(set[0], set[1], 0);
+            }
+            case "0011" -> { // sub
+                executeInstruction(set[0], set[1], 0);
+            }
+            case "0100" -> { // mov
+                if(set[2].matches("^(0000|0001|0010|0011)$")){
+                    executeInstruction(set[0], set[1]+","+set[2], 0);
+                }else{
+                    executeInstruction(set[0], set[1], Integer.parseInt(set[2]));
+                }
+            }
+            case "0101" -> { // inc
+                executeInstruction(set[0], set[1], 0);
+            }
+            case "0110" -> { // dec
+                executeInstruction(set[0], set[1], 0);
+            }
+            case "0111" -> { // swap
+                executeInstruction(set[0], set[1]+","+set[2], 0);
+            }
+            case "1000" -> { //int
+                executeInstruction(set[0], set[1]+","+set[2], 0);
+            }
+            case "1001" -> { //cmp
+                executeInstruction(set[0], set[1]+","+set[2], 0);
+            }
+            
+            case "1010" -> { //jumps
+                executeInstruction(set[0], set[1], Integer.parseInt(set[2]));
+            }
+            default -> {break;}
         }
-        catch(Exception e){
-            //some instructions doesn´t have a value at end
+    }
+    
+    /**
+     * Executes an instruccion of the current process
+     * @param instruction the instruction to receive
+     * @param register the register(s) to modify
+     * @param value optional value, it depends of the executed instruction if it's needed
+     */
+    public void executeInstruction(String instruction, String register, int value) {
+        State state = State.RUNNING;
+        int registerValue = switch (register) {
+            case "0000" -> getAX();
+            case "0001" -> getBX();
+            case "0010" -> getCX();
+            case "0011" -> getDX();
+            default -> 0;
+        };
+
+        switch (instruction) {
+            case "0000" -> { // load
+                setAC(registerValue);
+            }
+            case "0001" -> { // store
+                setRegisterValue(register, getAC());
+            }
+            case "0010" -> { // add
+                setAC(getAC() + registerValue);
+            }
+            case "0011" -> { // sub
+                setAC(getAC() - registerValue);
+            }
+            case "0100" -> { // mov
+                String[] regs = register.split(",");
+                if(regs.length==2){
+                    registerValue = switch (regs[1]) {
+                        case "0000" -> getAX();
+                        case "0001" -> getBX();
+                        case "0010" -> getCX();
+                        case "0011" -> getDX();
+                        default -> 0;
+                    };
+                    setRegisterValue(regs[0], registerValue);
+                }
+                else{
+                    setRegisterValue(register, value);
+                }
+            }
+            case "0101" -> { // inc
+                if (register.equals("0111")) { // AC
+                    setAC(getAC() + 1);
+                } else {
+                    setRegisterValue(register, registerValue + 1);
+                }
+            }
+            case "0110" -> { // dec
+                if (register.equals("0111")) { // AC
+                    setAC(getAC() - 1);
+                } else {
+                    setRegisterValue(register, registerValue - 1);
+                }
+            }
+            case "0111" -> { // swap
+                // Extract both registers from the input format
+                String[] regs = register.split(",");
+                int reg1Value = getRegisterValue(regs[0]);
+                int reg2Value = getRegisterValue(regs[1]);
+
+                // Swap values
+                setRegisterValue(regs[0], reg2Value);
+                setRegisterValue(regs[1], reg1Value);
+            }
+            case "1000" -> { //int
+                System.out.println("interruption in progress");
+                state = State.BLOCKED;
+            }
+            case "1001" -> { //cmp
+                String[] regs = register.split(",");
+                int reg1Value = getRegisterValue(regs[0]);
+                int reg2Value = getRegisterValue(regs[1]);
+                
+                int res = reg2Value - reg1Value;
+                this.setZeroFlag(res == 0? 1 : 0);
+                this.setSignFlag(res < 0? 1 : 0);
+            }
+            
+            case "1010" -> { //jumps
+                int startScope = getCurrentProcess().ownPCB.getDirBase();
+                int endScope = getCurrentProcess().ownPCB.getDirEnd();
+                int valueJump = getPC()+value;
+                //validating previous to jump
+                if(endScope < valueJump || startScope > valueJump){
+                    setPC(endScope);
+                    return;
+                }
+                valueJump--;
+                switch(register){ //in this case, register is jumpType
+                    case "0000" -> { //JMP
+                        setPC(valueJump);
+                        break;
+                    } 
+                    case "0001" -> { //JG
+                        //sf = 1 ? reg2 is greater
+                        setPC(this.getSignFlag()==1 ? getPC() : valueJump);
+                        break;
+                    } 
+                    case "0010" -> { //JL
+                        //sf = 0 ? reg1 is greater
+                        setPC(this.getSignFlag()==0 ? getPC() : valueJump);
+                        break;
+                    }
+                    case "0011" -> { //JGE
+                        setPC((this.getSignFlag()==1 || this.getZeroFlag()==1) ? getPC() : valueJump);
+                        break;
+                    }
+                    case "0100" -> { //JLE
+                        setPC((this.getSignFlag()==0 || this.getZeroFlag()==1) ? getPC() : valueJump);
+                        break;
+                    }
+                    case "0101" -> { //JE
+                        //zf = 1? equals
+                        setPC(this.getZeroFlag()==0 ? getPC() : valueJump);
+                        break;
+                    }
+                    case "0110" -> { //JNE
+                        //zf = 0? no equals
+                        setPC(this.getSignFlag()==1 ? getPC() : valueJump);
+                        break;
+                    } 
+                    default -> {break;}
+                }
+            }
+            default -> {break;}
+        }   
+        
+        this.updateProcess(state);
+    }
+
+    private void setRegisterValue(String register, int value) {
+        switch (register) {
+            case "0000" -> setAX(value);
+            case "0001" -> setBX(value);
+            case "0010" -> setCX(value);
+            case "0011" -> setDX(value);
+            default -> setAC(value);
         }
-        try{
-            reg = instr.equals("0111") ? set[1]+","+set[2]: instr.equals("1000")? set[1]+","+set[2]: set[1];
-        }
-        catch(Exception e){
-            //some instructions doesn´t have a value at end
-        }
-        processTable.get(currentProcess).executeInstruction(instr, reg, value);
+    }
+
+    private int getRegisterValue(String register) {
+        return switch (register) {
+            case "0000" -> getAX();
+            case "0001" -> getBX();
+            case "0010" -> getCX();
+            case "0011" -> getDX();
+            default -> getAC();
+        };
     }
     
     public Process forwardStep(){
-        String instruction = this.memoryTable.get(processTable.get(currentProcess).ownPCB.getPC()+1);
-        processTable.get(currentProcess).next(instruction);
-        execute(instruction);
+        setPC(getPC()+1);
+        setIR(this.memoryTable.get(getPC()));
+        execute();
         
-        //System.out.println(processTable.get(currentProcess));
-        return processTable.get(currentProcess);
-    }
-    
-    @Deprecated 
-    public Process backwardStep(){
-        processTable.get(currentProcess).previous(this.memoryTable.get(processTable.get(currentProcess).ownPCB.getPC()-1));
-        return processTable.get(currentProcess);
+        return getCurrentProcess();
     }
 }

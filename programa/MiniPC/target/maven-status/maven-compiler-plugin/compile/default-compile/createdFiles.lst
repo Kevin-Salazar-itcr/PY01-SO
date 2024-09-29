@@ -1,4 +1,5 @@
 UI\MainFrame$1.class
+UI\MainFrame$22.class
 UI\PCBViewer$2.class
 UI\MainFrame$12.class
 UI\MainFrame$8.class
@@ -10,6 +11,7 @@ Logic\SyntaxManager.class
 UI\MainFrame$14.class
 UI\MainFrame$17.class
 Logic\test.class
+UI\MainFrame$24.class
 UI\MainFrame$6.class
 UI\PCBViewer$4.class
 Logic\State.class
@@ -31,6 +33,7 @@ UI\MainFrame$13.class
 UI\PCBViewer$3.class
 UI\CLI.class
 UI\CLI$1.class
+UI\MainFrame$23.class
 UI\MainFrame$2.class
 UI\MainFrame$18.class
 UI\Config$1.class

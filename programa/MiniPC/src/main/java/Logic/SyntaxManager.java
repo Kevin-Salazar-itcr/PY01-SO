@@ -211,39 +211,4 @@ public class SyntaxManager {
             default -> "1111"; // Invalid jump type
         };
     }
-    
-    /**
-     * Replaces values in the binary instructions with their corresponding keys in the map.
-     *
-     * @param startNumber The starting number for the temporary map.
-     */
-    public void replaceValuesWithMap(int startNumber) {
-        HashMap<Integer, Integer> map = new HashMap<>();
-        for (int i = 0; i < values.size(); i++) {
-            map.put(startNumber + i, values.get(i));
-        }
-
-        for (int i = 0; i < binaryInstructions.size(); i++) {
-            String curr = binaryInstructions.get(i);
-            if (curr.length() > 9 && curr.startsWith("0100")) {
-                String a = curr.substring(0, 10);
-                int b = Integer.parseInt(curr.substring(10, curr.length()));
-                String c = a + String.valueOf(getKeyByValue(map, b));
-                binaryInstructions.set(i, c);
-            }
-        }
-    }
-
-    /**
-     * Helper method to get the key associated with a value in the map.
-     *
-     * @param map The map containing key-value pairs.
-     * @param value The value to find the key for.
-     * @return The key associated with the value.
-     */
-    private Integer getKeyByValue(HashMap<Integer, Integer> map, Integer value) {
-        return map.entrySet().stream().filter(entry -> value.equals(entry.getValue()))
-                .map(HashMap.Entry::getKey).findFirst().orElse(null);
-    }
-}
-
+ }

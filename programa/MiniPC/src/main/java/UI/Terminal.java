@@ -83,7 +83,10 @@ public class Terminal extends javax.swing.JFrame {
     }
     
     public int returnValue(){
-        try{return Integer.parseInt(this.text);}
+        try{
+            this.setVisible(false);
+            return Integer.parseInt(this.text);
+        }
         catch(Exception e){
             return -99999999;
         }
