@@ -357,12 +357,19 @@ public final class CPU {
     }
     
     public boolean finish(){
+        Process p = getCurrentProcess();
+        this.processScheduler.remove(p);
         changeContext(State.FINISHED); 
         if(getCurrentProcess()!=null){
             run();
             return false;
         }
         return true;
+    }
+    
+    //moves a process line to its last instruction
+    public void killProcess(){
+        setPC(getCurrentProcess().ownPCB.getDirEnd());
     }
     
     //listens a value from terminal
@@ -425,7 +432,7 @@ public final class CPU {
                 executeInstruction(set[0], set[1]+","+set[2], 0);
             }
             case "1000" -> { //int
-                getCurrentProcess().ownPCB.setBurst(3);
+                getCurrentProcess().ownPCB.setBurst(2);
                 executeInstruction(set[0], set[1]+","+set[2], 0);
             }
             case "1001" -> { //cmp

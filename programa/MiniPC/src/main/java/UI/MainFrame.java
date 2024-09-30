@@ -6,13 +6,15 @@ package UI;
 
 import Logic.*;
 import Logic.SyntaxManager;
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-
+import javax.swing.text.*;
 /**
  *
  * @author ksala
@@ -27,6 +29,8 @@ public final class MainFrame extends javax.swing.JFrame {
     public CPU cpu;
     public Terminal cli;
     private boolean auto = false;
+    private long startTime;
+    private long endTime;
     
     public MainFrame() {
         this.config = new Config(this);
@@ -78,7 +82,7 @@ public final class MainFrame extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        memTable = new javax.swing.JTextArea();
+        memTable = new javax.swing.JTextPane();
         jPanel3 = new javax.swing.JPanel();
         jLabel11 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -308,9 +312,6 @@ public final class MainFrame extends javax.swing.JFrame {
 
         jLabel10.setText("Memory Table");
 
-        memTable.setEditable(false);
-        memTable.setColumns(20);
-        memTable.setRows(5);
         jScrollPane1.setViewportView(memTable);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -618,8 +619,6 @@ public final class MainFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_opOpenActionPerformed
     
-    
-    
     public void setMemory(){
         String s = cpu.formattingMemory();
         this.memTable.setText(s);
@@ -725,6 +724,7 @@ public final class MainFrame extends javax.swing.JFrame {
         Logic.Process current = cpu.getCurrentProcess();
         this.pc.setText(String.valueOf(current.ownPCB.getPC()));
         this.ir.setText(current.ownPCB.getIR());
+        this.PCBV.id.setText(String.valueOf(current.ownPCB.getId()));
         this.PCBV.pc.setText(String.valueOf(current.ownPCB.getPC()));
         this.PCBV.ir.setText(current.ownPCB.getIR());
         
@@ -739,13 +739,37 @@ public final class MainFrame extends javax.swing.JFrame {
         this.cx.setText(String.valueOf(current.ownPCB.getCX()));
         this.dx.setText(String.valueOf(current.ownPCB.getDX()));
         this.ac.setText(String.valueOf(current.ownPCB.getAC()));
+        this.highlightLineContaining(pc.getText()+":");
     }
     
     public void listen(int value){
-        System.out.println("Escuchando valor desde terminal: "+value);
         this.cpu.listen(value);
+        this.endTime = System.currentTimeMillis();
+        int burst = (int) ((endTime - startTime) / 1000);
+        cpu.getCurrentProcess().ownPCB.setBurst(burst-2); //-2 cuz executeInstr. adds 2 for any interruption
         this.auto = !this.autoButton.isEnabled();
+        
         step();
+    }
+    
+    public void highlightLineContaining(String searchText) {
+        try {
+            StyledDocument doc = memTable.getStyledDocument();
+            String text = doc.getText(0, doc.getLength());
+            
+            AttributeSet clearAttr = StyleContext.getDefaultStyleContext().addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Background, Color.WHITE);
+            doc.setCharacterAttributes(0, text.length(), clearAttr, false);
+            
+            AttributeSet highlightAttr = StyleContext.getDefaultStyleContext().addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Background, Color.GREEN);
+
+            int offset = 0;
+            for (String line : text.split("\n")) {
+                if (line.contains(searchText))
+                    doc.setCharacterAttributes(offset, line.length(), highlightAttr, false);
+                offset += line.length() + 1;
+            }
+        } catch (BadLocationException e) {
+        }
     }
     
     public void step(){
@@ -772,14 +796,16 @@ public final class MainFrame extends javax.swing.JFrame {
             if(current.ownPCB.getIR().startsWith("1000")){
                 this.PCBV.state.setText("BLOCKED");
                 switch(current.ownPCB.getIR().split(" ")[2]){
-                    case "0001"->{
+                    case "0001"->{ //int 09h
                         this.auto = false;
+                        this.startTime = System.currentTimeMillis();
                         this.cli.input();
                         break;
-                    }case "0010"->{
+                    }case "0010"->{ //int 10h
                         this.cli.print(String.valueOf(current.ownPCB.getDX()));
                         break;
-                    }case "0011"->{
+                    }case "0011"->{ //int 20h
+                        this.cpu.killProcess();
                         break;
                     }
                     default->{
@@ -787,6 +813,7 @@ public final class MainFrame extends javax.swing.JFrame {
                     }
                 }
             }
+            
             this.bw.setEnabled(true);
             this.pc.setText(String.valueOf(cpu.getPC()));
             this.ir.setText(cpu.getIR());
@@ -798,6 +825,17 @@ public final class MainFrame extends javax.swing.JFrame {
             this.PCBV.cx.setText(String.valueOf(current.ownPCB.getCX()));
             this.PCBV.dx.setText(String.valueOf(current.ownPCB.getDX()));
             this.PCBV.ac.setText(String.valueOf(current.ownPCB.getAC()));
+            highlightLineContaining(pc.getText()+":");
+            JLabel[] stackFields = {this.PCBV.stack0, this.PCBV.stack1, this.PCBV.stack2, this.PCBV.stack3, this.PCBV.stack4};
+
+            for (int i = 0; i < stackFields.length; i++) {
+                try {
+                    stackFields[i].setText(String.valueOf(cpu.getStack().get(i)));
+                } catch (Exception e) {
+                    stackFields[i].setText("0");
+                }
+            }
+
             
             this.ax.setText(String.valueOf(cpu.getAX()));
             this.bx.setText(String.valueOf(cpu.getBX()));
@@ -917,7 +955,7 @@ public final class MainFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
-    private javax.swing.JTextArea memTable;
+    private javax.swing.JTextPane memTable;
     private javax.swing.JMenuItem opExit;
     private javax.swing.JMenuItem opOpen;
     private javax.swing.JMenuItem opSave1;

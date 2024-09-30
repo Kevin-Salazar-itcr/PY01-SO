@@ -148,9 +148,9 @@ public class Config extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try{
-            this.ramSize = Integer.parseInt(this.ram.getText());
-            this.discSize = Integer.parseInt(this.disk.getText());
-            this.virtualSize = Integer.parseInt(this.vrdisk.getText());
+            this.ramSize = Integer.parseInt(this.ram.getText())*16;
+            this.discSize = Integer.parseInt(this.disk.getText())*16;
+            this.virtualSize = Integer.parseInt(this.vrdisk.getText())*16;
             this.setVisible(false);
             
             this.current.cpu.resetMemory(ramSize, discSize, virtualSize);
