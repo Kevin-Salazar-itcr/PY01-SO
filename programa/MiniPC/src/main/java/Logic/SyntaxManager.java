@@ -65,7 +65,7 @@ public class SyntaxManager {
                        "INT\\s+((09|10|20)H)|" +
                        "CMP\\s+(AX|BX|CX|DX),\\s+(AX|BX|CX|DX)|" +
                        "(JMP|JG|JL|JGE|JLE|JE|JNE)\\s+(-?\\d+)|" +
-                       "PARAM\\s+(-?\\d+)(,\\s*(-?\\d+)){0,4}$";
+                       "PARAM\\s+(-?\\d+)(,\\s(-?\\d+)){0,4}$";
 
         Pattern pattern = Pattern.compile(regex);
         boolean allMatch = true;

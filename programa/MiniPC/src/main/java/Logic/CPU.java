@@ -4,6 +4,7 @@
  */
 package Logic;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Stack;
@@ -13,6 +14,7 @@ import java.util.Stack;
  */
 public final class CPU {
     private ArrayList<Process> processTable;
+    private Process[] mainProcesses = new Process[5];
     private HashMap<Integer, String> memoryTable;
     private int sysSpace;
     private int usrSpace;
@@ -308,6 +310,16 @@ public final class CPU {
         getCurrentProcess().ownPCB.setDX(value);
     }
     
+    public static String[] parseParamString(String str) {
+        String[] parts = str.split(" ", 2);
+        String[] numbers = parts[1].split(",\\s*");
+        String[] result = new String[numbers.length + 1];
+        result[0] = parts[0]; // Add "param"
+        System.arraycopy(numbers, 0, result, 1, numbers.length); // Add numbers
+        
+        return result;
+    }
+    
     //prepares the execution
     public void execute(){
         String[] set = getIR().split(" ");
@@ -352,7 +364,24 @@ public final class CPU {
             case "1010" -> { //jumps
                 executeInstruction(set[0], set[1], Integer.parseInt(set[2]));
             }
+            
+            case "1011" -> { //param
+                String[] arr = parseParamString(getIR());
+                String numbers = String.join(",", Arrays.copyOfRange(arr, 1, arr.length));
+                executeInstruction(arr[0], numbers, 0);
+            
+            }
+            case "1100" -> { //push
+                executeInstruction(set[0], set[1], 0);
+            } 
+            case "1101" -> { //pop
+                executeInstruction(set[0], set[1], 0);
+            }
+            
             default -> {break;}
+            
+            
+            
         }
     }
     
@@ -485,6 +514,34 @@ public final class CPU {
                     default -> {break;}
                 }
             }
+            
+            case "1011" -> { //param
+                String[] values = register.split(",");
+                if(getCurrentProcess().ownPCB.getStack().size()+values.length > 5){
+                    break;
+                }
+                int i = 0;
+                while (i<values.length){
+                    getCurrentProcess().ownPCB.getStack().push(Integer.valueOf(values[i++]));
+                }
+            }
+            
+            case "1100" -> { //push
+                if(getCurrentProcess().ownPCB.getStack().size() == 5){
+                    break;
+                }
+                int regValue = getRegisterValue(register);
+                getCurrentProcess().ownPCB.getStack().push(regValue);
+            }
+            
+            case "1101" -> { //pop
+                if(getCurrentProcess().ownPCB.getStack().isEmpty()){
+                    break;
+                }
+                int popValue = getCurrentProcess().ownPCB.getStack().pop();
+                setRegisterValue(register, popValue);
+            }
+            
             default -> {break;}
         }   
         
