@@ -3,9 +3,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package Logic;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Stack;
 /**
@@ -13,12 +17,16 @@ import java.util.Stack;
  * @author ksala
  */
 public final class CPU {
-    private ArrayList<Process> processTable;
-    private Process[] mainProcesses = new Process[5];
-    private HashMap<Integer, String> memoryTable;
-    private int sysSpace;
-    private int usrSpace;
+    private ArrayList<Process> waitingProcesses;
+    private ArrayList<Process> processScheduler;
+    private ArrayList<Process> disc;
+    private TreeMap<Integer, String> ram;
     public int currentProcess;
+    
+    public int ramSize;
+    public int discSize;
+    public int virtualDiscSize;
+    
     private int AX;
     private int BX;
     private int CX;
@@ -33,52 +41,50 @@ public final class CPU {
     public int limInf = 0;
     public int limSup = 0;
 
-    public CPU(){
-        this.processTable = new ArrayList<>();
-        this.memoryTable = new HashMap<>();
-        this.sysSpace = 10;
-        this.usrSpace = 10;
+    public CPU() {
+        this.waitingProcesses = new ArrayList<>();
+        this.processScheduler = new ArrayList<>();
+        this.disc = new ArrayList<>();
+        this.ram = new TreeMap<>();
+        
         this.currentProcess = 0;
-        configureMemory();
+        this.ramSize = 0;
+        this.discSize = 0;
+        this.virtualDiscSize = 0;
+        this.AX = 0;
+        this.BX = 0;
+        this.CX = 0;
+        this.DX = 0;
+        this.PC = 0;
+        this.AC = 0;
+        this.IR = "";
+        this.zeroFlag = 0;
+        this.signFlag = 0;
+        this.stack = new Stack<>(); 
+        configureMemory(false);
     }
 
     /*Setters, Getters*/
     public ArrayList<Process> getProcessTable() {
-        return processTable;
+        return waitingProcesses;
     }
 
-    public void setProcessTable(ArrayList<Process> processTable) {
-        this.processTable = processTable;
+    public void setWaitingProcesses(ArrayList<Process> waitingProcesses) {
+        this.waitingProcesses = waitingProcesses;
     }
 
-    public HashMap<Integer, String> getMemoryTable() {
-        return memoryTable;
+    public TreeMap<Integer, String> getMemoryTable() {
+        return ram;
     }
 
-    public void setMemoryTable(HashMap<Integer, String> memoryTable) {
-        this.memoryTable = memoryTable;
+    public void setMemoryTable(TreeMap<Integer, String> ram) {
+        this.ram = ram;
     }
 
-    public int getSysSpace() {
-        return sysSpace;
-    }
-
-    public void setSysSpace(int sysSpace) {
-        this.sysSpace = sysSpace;
-    }
-
-    public int getUsrSpace() {
-        return usrSpace;
+    public void editTreeMap(int key, String value){
+        this.ram.put(key, value);
     }
     
-    public void editHashMap(int key, String value){
-        this.memoryTable.put(key, value);
-    }
-
-    public void setUsrSpace(int usrSpace) {
-        this.usrSpace = usrSpace;
-    }
-
     public int getAX() {
         return AX;
     }
@@ -150,17 +156,53 @@ public final class CPU {
     public void setSignFlag(int signFlag) {
         this.signFlag = signFlag;
     }
+
+    public ArrayList<Process> getWaitingProcesses() {
+        return waitingProcesses;
+    }
+
+    public ArrayList<Process> getProcessScheduler() {
+        return processScheduler;
+    }
+
+    public void setProcessScheduler(ArrayList<Process> processScheduler) {
+        this.processScheduler = processScheduler;
+    }
+
+    public TreeMap<Integer, String> getRam() {
+        return ram;
+    }
+
+    public void setRam(TreeMap<Integer, String> ram) {
+        this.ram = ram;
+    }
+
+    public Stack<Integer> getStack() {
+        return stack;
+    }
+
+    public void setStack(Stack<Integer> stack) {
+        this.stack = stack;
+    }
     
     //----------------------------------------------------------------
-    /**
-     * Fills the memory with nullptr
-     */
-    public void configureMemory(){
-        int n = getUsrSpace()+getSysSpace();
-        this.memoryTable.clear();
-        for (int i = 0; i < n; i++) {
-            this.memoryTable.put(i, "NULL");
+
+    //configure default values for memory values
+    public void configureMemory(boolean change){
+        this.ram.clear();
+        if(change){
+            return;
         }
+        Properties properties = new Properties();
+        try (FileInputStream input = new FileInputStream(System.getProperty("user.dir")+"\\config.properties")) {
+            properties.load(input);
+
+            ramSize = Integer.parseInt(properties.getProperty("ram"));
+            discSize = Integer.parseInt(properties.getProperty("disc"));
+            virtualDiscSize = Integer.parseInt(properties.getProperty("virtual"));
+            
+        } catch (IOException e) {}
+        
     }
     
     /**
@@ -170,51 +212,71 @@ public final class CPU {
      */
     public String formattingMemory() {
         StringBuilder sb = new StringBuilder();
-        for (Integer key : memoryTable.keySet()) {
-            sb.append(key).append(":\t").append(memoryTable.get(key)).append("\n");
+        for (Integer key : ram.keySet()) {
+            sb.append(key).append(":\t").append(ram.get(key)).append("\n");
         }
         return sb.toString();
     }
 
     //suits a random number to position between 2 limits
-    public static int generatePosition(int c, int lowerBound, int upperBound) {
-        int minPosition = lowerBound;
+    public int generatePosition(int c, int lowerBound, int upperBound) {
         int maxPosition = upperBound - c;
-        
         if (c > (upperBound - lowerBound)) {
-            throw new IllegalArgumentException("index out of range.");
+            throw new IllegalArgumentException("Index out of range.");
         }
-
         Random random = new Random();
-        return random.nextInt(maxPosition - minPosition + 1) + minPosition;
+        while (true) {
+            int rand = random.nextInt(maxPosition - lowerBound + 1) + lowerBound;
+
+            // Check if all 'c' spaces are free
+            boolean isFree = true;
+            for (int i = 0; i < c && isFree; i++) {
+                if (ram.containsKey(rand + i)) {
+                    isFree = false;
+                }
+            }
+
+            if (isFree) {
+                return rand;
+            }
+        }
     }
     
     /**
-     * Adds a process reference to the process table
-     * @param p 
+     * Adds a process in the process queue
+     * @param p new process
      */ 
+    public void newProcess(Process p){
+        if(this.processScheduler.size()<5){ //only 5 processes can be executing at time
+            p.ownPCB.setState(State.READY);
+            processScheduler.add(p);
+        }
+        else{
+            this.waitingProcesses.add(p);
+        }
+    }
+    
+    /**
+     * Adds a process in main memory
+     * @param p 
+     */
     public void addProcess(Process p){
-        ArrayList<String> l = SyntaxManager.getInstance().getBinaryInstructions();
-         
-        int pos = generatePosition(p.getFileContent().size(), 0, getSysSpace());
+        int pos = generatePosition(p.getFileContent().size(), 0, this.ramSize);
         int count = pos;        
-        this.limInf = pos;
-        //setting System memory
+        
+        //setting it in main memory
         for(String x: SyntaxManager.getInstance().getBinaryInstructions()){
-            editHashMap(count, x);
-            this.limSup = count;
-            count++;
+            editTreeMap(count++, x);
         }
         p.ownPCB.setPC(pos);
         p.ownPCB.setDirBase(pos);
         p.ownPCB.setDirEnd(p.getFileContent().size()+pos-1);
-        p.ownPCB.setIR(this.memoryTable.get(pos));
-        this.processTable.add(p);
+        p.ownPCB.setIR(this.ram.get(pos));
     }
     
     //returns current process (the current is whoever that isn't finished yet in the queue)
     public Process getCurrentProcess(){
-        for(Process p: processTable){
+        for(Process p: waitingProcesses){
             if (p.ownPCB.getState() != State.FINISHED){
                 return p;
             }
@@ -232,18 +294,12 @@ public final class CPU {
         getCurrentProcess().ownPCB.setPC(getPC());
         getCurrentProcess().ownPCB.setAC(getAC());
         getCurrentProcess().ownPCB.setIR(getIR());
+        getCurrentProcess().ownPCB.setStack(stack);
     }
 
     public void changeContext(State state) {
-        getCurrentProcess().ownPCB.setState(state);
         if(getCurrentProcess()!=null){
-            getCurrentProcess().ownPCB.setAX(getAX());
-            getCurrentProcess().ownPCB.setBX(getBX());
-            getCurrentProcess().ownPCB.setCX(getCX());
-            getCurrentProcess().ownPCB.setDX(getDX());
-            getCurrentProcess().ownPCB.setPC(getPC());
-            getCurrentProcess().ownPCB.setAC(getAC());
-            getCurrentProcess().ownPCB.setIR(getIR());
+            updateProcess(state);
         }
         setAX(0);
         setBX(0);
@@ -251,6 +307,7 @@ public final class CPU {
         setDX(0);
         setPC(0);
         setAC(0);
+        this.setStack(new Stack<>());
         setIR("");
     }
 
@@ -258,18 +315,17 @@ public final class CPU {
      * Resets the memory to the original state
      */
     public void resetMemory(){
-        setSysSpace(10);
-        setUsrSpace(10);
-        configureMemory();
-        setProcessTable(new ArrayList<>());
+        configureMemory(false);
+        setWaitingProcesses(new ArrayList<>());
         currentProcess = 0;
     }
     
-    public void resetMemory(int sys, int usr){
-        setSysSpace(sys);
-        setUsrSpace(usr);
-        configureMemory();
-        setProcessTable(new ArrayList<>());
+    public void resetMemory(int ram, int disk, int virtual){
+        this.ramSize = ram;
+        this.discSize = disk;
+        this.virtualDiscSize = virtual;
+        configureMemory(true);
+        setWaitingProcesses(new ArrayList<>());
         currentProcess = 0;
     }
     
@@ -279,7 +335,7 @@ public final class CPU {
      */
     public Process run(){
         setPC(getCurrentProcess().ownPCB.getPC());
-        setIR(this.memoryTable.get(getCurrentProcess().ownPCB.getPC()));
+        setIR(this.ram.get(getCurrentProcess().ownPCB.getPC()));
         execute();
         return getCurrentProcess();
     }
@@ -291,7 +347,7 @@ public final class CPU {
         setDX(0);
         setPC(getCurrentProcess().ownPCB.getDirBase());
         setAC(0);
-        String instruction = this.memoryTable.get(getCurrentProcess().ownPCB.getDirBase());
+        String instruction = this.ram.get(getCurrentProcess().ownPCB.getDirBase());
         setIR(instruction);
         
         updateProcess(State.READY);
@@ -300,8 +356,7 @@ public final class CPU {
     }
     
     public void finish(){
-        changeContext(State.FINISHED);
-        
+        changeContext(State.FINISHED); 
     }
     
     //listens a value from terminal
@@ -359,12 +414,10 @@ public final class CPU {
             }
             case "1001" -> { //cmp
                 executeInstruction(set[0], set[1]+","+set[2], 0);
-            }
-            
+            }            
             case "1010" -> { //jumps
                 executeInstruction(set[0], set[1], Integer.parseInt(set[2]));
-            }
-            
+            }         
             case "1011" -> { //param
                 String[] arr = parseParamString(getIR());
                 String numbers = String.join(",", Arrays.copyOfRange(arr, 1, arr.length));
@@ -517,28 +570,28 @@ public final class CPU {
             
             case "1011" -> { //param
                 String[] values = register.split(",");
-                if(getCurrentProcess().ownPCB.getStack().size()+values.length > 5){
+                if(this.stack.size()+values.length > 5){
                     break;
                 }
                 int i = 0;
                 while (i<values.length){
-                    getCurrentProcess().ownPCB.getStack().push(Integer.valueOf(values[i++]));
+                   this.stack.push(Integer.valueOf(values[i++]));
                 }
             }
             
             case "1100" -> { //push
-                if(getCurrentProcess().ownPCB.getStack().size() == 5){
+                if(this.stack.size() == 5){
                     break;
                 }
                 int regValue = getRegisterValue(register);
-                getCurrentProcess().ownPCB.getStack().push(regValue);
+                this.stack.push(regValue);
             }
             
             case "1101" -> { //pop
-                if(getCurrentProcess().ownPCB.getStack().isEmpty()){
+                if(this.stack.isEmpty()){
                     break;
                 }
-                int popValue = getCurrentProcess().ownPCB.getStack().pop();
+                int popValue = this.stack.pop();
                 setRegisterValue(register, popValue);
             }
             
@@ -570,7 +623,7 @@ public final class CPU {
     
     public Process forwardStep(){
         setPC(getPC()+1);
-        setIR(this.memoryTable.get(getPC()));
+        setIR(this.ram.get(getPC()));
         execute();
         
         return getCurrentProcess();

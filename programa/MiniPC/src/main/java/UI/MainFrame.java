@@ -577,7 +577,7 @@ public final class MainFrame extends javax.swing.JFrame {
             this.cpu.resetMemory();
         }
         else{
-            this.cpu.resetMemory(this.cpu.getSysSpace(), this.cpu.getUsrSpace());
+            this.cpu.resetMemory();
         }
         this.usrCode.setText("");
         this.PCBV = new PCBViewer();
@@ -630,7 +630,7 @@ public final class MainFrame extends javax.swing.JFrame {
                 if(!SyntaxManager.getInstance(content).verifyInstructions()){
                     JOptionPane.showMessageDialog(null, "Invalid syntax detected on file", "Error", JOptionPane.ERROR_MESSAGE);
                 }else{
-                    if(content.split("\n").length>cpu.getSysSpace()){
+                    if(content.split("\n").length*16 > cpu.ramSize){
                         JOptionPane.showMessageDialog(null, "It'll cause overflow, please expand memory", "Warning", JOptionPane.WARNING_MESSAGE);
                         return;
                     }
@@ -650,7 +650,7 @@ public final class MainFrame extends javax.swing.JFrame {
     
     public void chargeMemory(String file){
         this.usrCode.setText(file);
-        cpu.addProcess(new Logic.Process(file));
+        cpu.newProcess(new Logic.Process(file));
         setMemory();
         configPCB();
     }

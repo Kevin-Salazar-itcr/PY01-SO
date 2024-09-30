@@ -16,7 +16,7 @@ public class Process {
     
     public Process(String file){
         setFileContent(new ArrayList<>(Arrays.asList(file.split("\n"))));
-        this.ownPCB = new PCB(State.READY, getFileContent().size());
+        this.ownPCB = new PCB(State.NEW, getFileContent().size());
     }
     
     public final ArrayList<String> getFileContent(){
