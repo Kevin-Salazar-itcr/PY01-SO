@@ -40,6 +40,7 @@ public final class MainFrame extends javax.swing.JFrame {
         initComponents();
         setMemory();
         this.bw.setEnabled(false);
+        this.bw.setVisible(false);
         this.fw.setEnabled(false);
         this.run.setEnabled(false);
         this.autoButton.setVisible(false);
@@ -590,58 +591,34 @@ public final class MainFrame extends javax.swing.JFrame {
     
     private void opOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opOpenActionPerformed
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Open a source file");
+        fileChooser.setMultiSelectionEnabled(true);
+        fileChooser.setDialogTitle("Open source files");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setAcceptAllFileFilterUsed(false);
-    
-        // .asm filter
-        javax.swing.filechooser.FileFilter asmFilter = new javax.swing.filechooser.FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                if (f.isDirectory()) {
-                    return true;
-                }
-                String extension = getFileExtension(f);
-                return extension != null && extension.equals("asm");
-            }
-    
-            @Override
-            public String getDescription() {
-                return "Assembly Files (*.asm)";
-            }
-    
-            private String getFileExtension(File f) {
-                String name = f.getName();
-                int lastIndex = name.lastIndexOf('.');
-                if (lastIndex > 0 && lastIndex < name.length() - 1) {
-                    return name.substring(lastIndex + 1).toLowerCase();
-                }
-                return null;
-            }
-        };
-        
-        fileChooser.setFileFilter(asmFilter);
-    
-        int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try {
-                String content = new String(Files.readAllBytes(file.toPath()));
-                if(!SyntaxManager.getInstance(content).verifyInstructions()){
-                    JOptionPane.showMessageDialog(null, "Invalid syntax detected on file", "Error", JOptionPane.ERROR_MESSAGE);
-                }else{
-                    if(content.split("\n").length*16 > cpu.ramSize){
-                        JOptionPane.showMessageDialog(null, "It'll cause overflow, please expand memory", "Warning", JOptionPane.WARNING_MESSAGE);
-                        return;
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Assembly Files (*.asm)", "asm"));
+
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            for (File file : fileChooser.getSelectedFiles()) {
+                try {
+                    String content = new String(Files.readAllBytes(file.toPath()));
+                    if (!SyntaxManager.getInstance(content).verifyInstructions()) {
+                        JOptionPane.showMessageDialog(null, "Invalid syntax detected in file: " + file.getName(), "Error", JOptionPane.ERROR_MESSAGE);
+                        continue;
                     }
-                    reset(1);
+                    if (content.split("\n").length * 16 > cpu.ramSize) {
+                        JOptionPane.showMessageDialog(null, "File: " + file.getName() + " will cause overflow, please expand memory", "Warning", JOptionPane.WARNING_MESSAGE);
+                        continue;
+                    }
                     this.run.setEnabled(true);
                     chargeMemory(content);
+
+                } catch (IOException e) {
                 }
-            } catch (IOException e) {
             }
         }
     }//GEN-LAST:event_opOpenActionPerformed
+    
+    
     
     public void setMemory(){
         String s = cpu.formattingMemory();
@@ -657,7 +634,15 @@ public final class MainFrame extends javax.swing.JFrame {
     
     public void configPCB(){
         this.PCBV.state.setText("READY");
-        this.PCBV.id.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.getProcessID()));
+        this.PCBV.id.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.getId()));
+        this.PCBV.pc.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.getPC()));
+        this.PCBV.ir.setText(cpu.getCurrentProcess().ownPCB.getIR());
+        
+        this.PCBV.ax.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.getAX()));
+        this.PCBV.bx.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.getBX()));
+        this.PCBV.cx.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.getCX()));
+        this.PCBV.dx.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.getDX()));
+        this.PCBV.ac.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.getAC()));
     }
     
     private void axActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_axActionPerformed
@@ -736,8 +721,8 @@ public final class MainFrame extends javax.swing.JFrame {
         this.run.setEnabled(false);
         this.bw.setEnabled(false);
         this.fw.setEnabled(true);
-        
-        Logic.Process current = this.cpu.run();
+        this.cpu.run();
+        Logic.Process current = cpu.getCurrentProcess();
         this.pc.setText(String.valueOf(current.ownPCB.getPC()));
         this.ir.setText(current.ownPCB.getIR());
         this.PCBV.pc.setText(String.valueOf(current.ownPCB.getPC()));
@@ -768,9 +753,14 @@ public final class MainFrame extends javax.swing.JFrame {
         if(cpu.getPC()==limSup){
             this.PCBV.state.setText("FINISHED");
             this.auto = false;
-            this.cpu.finish();
-            this.fw.setEnabled(false);
+            boolean fin = this.cpu.finish();
+            this.fw.setEnabled(!fin);
             this.bw.setEnabled(true);
+            if(fin){
+                return;
+            }else{
+                step();
+            }
         }
         else{
             //update current process

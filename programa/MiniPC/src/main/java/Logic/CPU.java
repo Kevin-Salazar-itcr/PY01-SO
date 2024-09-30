@@ -249,7 +249,7 @@ public final class CPU {
     public void newProcess(Process p){
         if(this.processScheduler.size()<5){ //only 5 processes can be executing at time
             p.ownPCB.setState(State.READY);
-            processScheduler.add(p);
+            addProcess(p);
         }
         else{
             this.waitingProcesses.add(p);
@@ -261,6 +261,7 @@ public final class CPU {
      * @param p 
      */
     public void addProcess(Process p){
+        System.out.println(p.toString());
         int pos = generatePosition(p.getFileContent().size(), 0, this.ramSize);
         int count = pos;        
         
@@ -272,11 +273,12 @@ public final class CPU {
         p.ownPCB.setDirBase(pos);
         p.ownPCB.setDirEnd(p.getFileContent().size()+pos-1);
         p.ownPCB.setIR(this.ram.get(pos));
+        this.processScheduler.add(p);
     }
     
     //returns current process (the current is whoever that isn't finished yet in the queue)
     public Process getCurrentProcess(){
-        for(Process p: waitingProcesses){
+        for(Process p: processScheduler){
             if (p.ownPCB.getState() != State.FINISHED){
                 return p;
             }
@@ -286,7 +288,6 @@ public final class CPU {
     
     //updates the values in current process
     public void updateProcess(State state) {
-        getCurrentProcess().ownPCB.setState(state);
         getCurrentProcess().ownPCB.setAX(getAX());
         getCurrentProcess().ownPCB.setBX(getBX());
         getCurrentProcess().ownPCB.setCX(getCX());
@@ -295,6 +296,7 @@ public final class CPU {
         getCurrentProcess().ownPCB.setAC(getAC());
         getCurrentProcess().ownPCB.setIR(getIR());
         getCurrentProcess().ownPCB.setStack(stack);
+        getCurrentProcess().ownPCB.setState(state);
     }
 
     public void changeContext(State state) {
@@ -333,11 +335,10 @@ public final class CPU {
      * Runs the process in queue 
      * @return the current process
      */
-    public Process run(){
+    public void run(){
         setPC(getCurrentProcess().ownPCB.getPC());
         setIR(this.ram.get(getCurrentProcess().ownPCB.getPC()));
         execute();
-        return getCurrentProcess();
     }
     
     public Process reset(){
@@ -355,8 +356,13 @@ public final class CPU {
         return getCurrentProcess();
     }
     
-    public void finish(){
+    public boolean finish(){
         changeContext(State.FINISHED); 
+        if(getCurrentProcess()!=null){
+            run();
+            return false;
+        }
+        return true;
     }
     
     //listens a value from terminal
@@ -382,18 +388,23 @@ public final class CPU {
         
         switch (set[0]) {
             case "0000" -> { // load
+                getCurrentProcess().ownPCB.setBurst(1);
                 executeInstruction(set[0], set[1], 0);
             }
             case "0001" -> { // store
+                getCurrentProcess().ownPCB.setBurst(1);
                 executeInstruction(set[0], set[1], 0);
             }
             case "0010" -> { // add
+                getCurrentProcess().ownPCB.setBurst(1);
                 executeInstruction(set[0], set[1], 0);
             }
             case "0011" -> { // sub
+                getCurrentProcess().ownPCB.setBurst(1);
                 executeInstruction(set[0], set[1], 0);
             }
             case "0100" -> { // mov
+                getCurrentProcess().ownPCB.setBurst(1);
                 if(set[2].matches("^(0000|0001|0010|0011)$")){
                     executeInstruction(set[0], set[1]+","+set[2], 0);
                 }else{
@@ -401,40 +412,47 @@ public final class CPU {
                 }
             }
             case "0101" -> { // inc
+                getCurrentProcess().ownPCB.setBurst(1);
+                getCurrentProcess().ownPCB.setBurst(1);
                 executeInstruction(set[0], set[1], 0);
             }
             case "0110" -> { // dec
+                getCurrentProcess().ownPCB.setBurst(1);
                 executeInstruction(set[0], set[1], 0);
             }
             case "0111" -> { // swap
+                getCurrentProcess().ownPCB.setBurst(2);
                 executeInstruction(set[0], set[1]+","+set[2], 0);
             }
             case "1000" -> { //int
+                getCurrentProcess().ownPCB.setBurst(3);
                 executeInstruction(set[0], set[1]+","+set[2], 0);
             }
             case "1001" -> { //cmp
+                getCurrentProcess().ownPCB.setBurst(1);
                 executeInstruction(set[0], set[1]+","+set[2], 0);
             }            
             case "1010" -> { //jumps
+                getCurrentProcess().ownPCB.setBurst(2);
                 executeInstruction(set[0], set[1], Integer.parseInt(set[2]));
             }         
             case "1011" -> { //param
+                getCurrentProcess().ownPCB.setBurst(3);
                 String[] arr = parseParamString(getIR());
                 String numbers = String.join(",", Arrays.copyOfRange(arr, 1, arr.length));
                 executeInstruction(arr[0], numbers, 0);
             
             }
             case "1100" -> { //push
+                getCurrentProcess().ownPCB.setBurst(1);
                 executeInstruction(set[0], set[1], 0);
             } 
             case "1101" -> { //pop
+                getCurrentProcess().ownPCB.setBurst(1);
                 executeInstruction(set[0], set[1], 0);
             }
             
-            default -> {break;}
-            
-            
-            
+            default -> {break;}       
         }
     }
     
@@ -569,7 +587,7 @@ public final class CPU {
             }
             
             case "1011" -> { //param
-                String[] values = register.split(",");
+                String[] values = register.split(" ");
                 if(this.stack.size()+values.length > 5){
                     break;
                 }

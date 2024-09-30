@@ -13,14 +13,15 @@ import java.util.Stack;
  */
 public class PCB {
     private static int processID = 0;
+    public int id;
     private State state;
     private int PC;
     private int AC;
     private String IR;
-    private int dirBase;
-    private int dirEnd;
-    private int execStart;
-    private int execEnd;
+    private int dirBase = 0;
+    private int dirEnd = 0;
+    private int execStart = 0;
+    private int execEnd = 0;
     private int AX;
     private int BX;
     private int CX;
@@ -30,10 +31,11 @@ public class PCB {
     private ArrayList<String> IO_Info;
     private int processSize;
     private int prior;
+    public int burst = 0;
     
     
     public PCB(State state, int size){
-        processID++;
+        this.id = ++processID;
         this.state = state;
         this.PC = 0;
         this.AC = 0;
@@ -42,18 +44,22 @@ public class PCB {
         this.CX = 0;
         this.DX = 0;
         this.IR = "0";
-        this.dirBase = this.PC;
-        this.dirEnd = 0; //not implemented yet
         this.stack = new Stack<>();
         this.IO_Info = new ArrayList<>();
         this.processSize = size;
         this.prior = processID;
-        this.execStart = 0;
-        this.execEnd = 0;
     }
 
-    public int getProcessID(){
-        return processID;
+    public int getBurst() {
+        return burst;
+    }
+
+    public void setBurst(int burst) {
+        this.burst += burst;
+    }
+
+    public int getId(){
+        return id;
     }
     
     public int getAX() {
@@ -184,8 +190,8 @@ public class PCB {
 
     @Override
     public String toString() {
-        return "PCB{" + "\nstate=" + state + ", \nPC=" + PC + ", \nAC=" + AC + ", \nIR=" + IR + ", \ndirBase=" + dirBase + ", \nAX=" + AX + ", \nBX=" + BX + ", \nCX=" + CX + ", \nDX=" + DX + '}';
+        return "PCB{"+ "id="+ processID + ", state=" + state + ", PC=" + PC + ", AC=" + AC + ", IR=" + IR + ", dirBase=" + dirBase + ", dirEnd=" + dirEnd + ", execStart=" + execStart + ", execEnd=" + execEnd + ", AX=" + AX + ", BX=" + BX + ", CX=" + CX + ", DX=" + DX + ", stack=" + stack + ", IO_Info=" + IO_Info + ", processSize=" + processSize + ", prior=" + prior + ", burst=" + burst + '}';
     }
-    
+
     
 }
