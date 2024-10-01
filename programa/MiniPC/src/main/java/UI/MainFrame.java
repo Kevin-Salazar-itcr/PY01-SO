@@ -733,6 +733,7 @@ public final class MainFrame extends javax.swing.JFrame {
         this.PCBV.cx.setText(String.valueOf(current.ownPCB.getCX()));
         this.PCBV.dx.setText(String.valueOf(current.ownPCB.getDX()));
         this.PCBV.ac.setText(String.valueOf(current.ownPCB.getAC()));
+        this.PCBV.burst.setText(String.valueOf(current.ownPCB.burst));
         
         this.ax.setText(String.valueOf(current.ownPCB.getAX()));
         this.bx.setText(String.valueOf(current.ownPCB.getBX()));
@@ -780,6 +781,7 @@ public final class MainFrame extends javax.swing.JFrame {
         catch(Exception e){return;}
         if(cpu.getPC()==limSup){
             this.PCBV.state.setText("FINISHED");
+            this.PCBV.burst.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.burst));
             this.cli.print("Process ["+cpu.getCurrentProcess().ownPCB.getId()+"] in <"+cpu.getCurrentProcess().ownPCB.getDirBase()+"> finished with code "+(cpu.exitCode==0?"0":"-1"));
             boolean fin = this.cpu.finish();
             this.fw.setEnabled(!fin);
@@ -829,7 +831,7 @@ public final class MainFrame extends javax.swing.JFrame {
             this.PCBV.id.setText(String.valueOf(current.ownPCB.getId()));
             this.PCBV.pc.setText(String.valueOf(current.ownPCB.getPC()));
             this.PCBV.ir.setText(current.ownPCB.getIR());
-            
+            this.PCBV.burst.setText(String.valueOf(current.ownPCB.burst));
             this.PCBV.ax.setText(String.valueOf(current.ownPCB.getAX()));
             this.PCBV.bx.setText(String.valueOf(current.ownPCB.getBX()));
             this.PCBV.cx.setText(String.valueOf(current.ownPCB.getCX()));
