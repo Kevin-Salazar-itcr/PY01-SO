@@ -10,6 +10,8 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -722,6 +724,7 @@ public final class MainFrame extends javax.swing.JFrame {
         this.fw.setEnabled(true);
         this.cpu.run();
         Logic.Process current = cpu.getCurrentProcess();
+        this.usrCode.setText(current.code());
         this.pc.setText(String.valueOf(current.ownPCB.getPC()));
         this.ir.setText(current.ownPCB.getIR());
         this.PCBV.id.setText(String.valueOf(current.ownPCB.getId()));
@@ -781,8 +784,13 @@ public final class MainFrame extends javax.swing.JFrame {
         catch(Exception e){return;}
         if(cpu.getPC()==limSup){
             this.PCBV.state.setText("FINISHED");
+            long finishTimeMillis = System.currentTimeMillis();
+            cpu.getCurrentProcess().finisTime = finishTimeMillis;
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+            cpu.getCurrentProcess().finsHour = dateFormat.format(new Date(finishTimeMillis));       
             this.PCBV.burst.setText(String.valueOf(cpu.getCurrentProcess().ownPCB.burst));
-            this.cli.print("Process ["+cpu.getCurrentProcess().ownPCB.getId()+"] in <"+cpu.getCurrentProcess().ownPCB.getDirBase()+"> finished with code "+(cpu.exitCode==0?"0":"-1"));
+            cpu.getCurrentProcess().setTotalTime();
+            this.cli.print("Process ["+cpu.getCurrentProcess().ownPCB.getId()+"] in <"+cpu.getCurrentProcess().ownPCB.getDirBase()+"> finished with code "+(cpu.exitCode==0?"0":"-1")+"\n"+"Start hour: "+cpu.getCurrentProcess().startHour +"\n"+"Finish hour: "+cpu.getCurrentProcess().finsHour+"\n"+"Total time in seconds: "+cpu.getCurrentProcess().totalTime);
             boolean fin = this.cpu.finish();
             this.fw.setEnabled(!fin);
             this.bw.setEnabled(true);

@@ -12,6 +12,12 @@ import java.util.Arrays;
  */
 public class Process {
     private ArrayList<String> fileContent;
+    public long startTime ;
+    public long finisTime;
+    public String startHour;
+    public String finsHour;
+    public long totalTime = 0; 
+
     public PCB ownPCB;
     
     public Process(String file){
@@ -31,6 +37,27 @@ public class Process {
         this.ownPCB.setPC(ownPCB.getDirBase());
         ownPCB.setIR(Instruction);
         ownPCB.cleanRegisters();
+    }
+    
+    public String code(){
+        
+        StringBuilder sb = new StringBuilder();
+        for (String x : fileContent) {
+            sb.append(x).append("\n");
+        }
+        return sb.toString();
+    
+    }
+    public void setStartHour(String startHour) {
+        this.startHour = startHour;
+    }
+
+    public void setFinsHour(String finsHour) {
+        this.finsHour = finsHour;
+    }
+    
+    public void setTotalTime() {
+        this.totalTime =((finisTime - startTime) / 1000);
     }
     
     @Override

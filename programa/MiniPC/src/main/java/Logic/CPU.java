@@ -5,8 +5,10 @@
 package Logic;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.TreeMap;
 import java.util.Properties;
 import java.util.Random;
@@ -46,8 +48,7 @@ public final class CPU {
         this.waitingProcesses = new ArrayList<>();
         this.processScheduler = new ArrayList<>();
         this.disc = new ArrayList<>();
-        this.ram = new TreeMap<>();
-        
+        this.ram = new TreeMap<>();       
         this.currentProcess = 0;
         this.ramSize = 0;
         this.discSize = 0;
@@ -352,6 +353,13 @@ public final class CPU {
      */
     public void run(){
         setPC(getCurrentProcess().ownPCB.getPC());
+        
+        long startTimeMillis = System.currentTimeMillis();
+        getCurrentProcess().startTime = startTimeMillis;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+        getCurrentProcess().startHour = dateFormat.format(new Date(startTimeMillis));
+        
+        
         setIR(this.ram.get(getCurrentProcess().ownPCB.getPC()));
         execute();
     }
@@ -371,7 +379,7 @@ public final class CPU {
         return getCurrentProcess();
     }
     
-    public boolean finish(){
+    public boolean finish(){          
         this.exitCode = 0;
         changeContext(State.FINISHED); 
         if(getCurrentProcess()!=null){
