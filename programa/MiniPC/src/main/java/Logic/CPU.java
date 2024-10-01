@@ -372,6 +372,7 @@ public final class CPU {
     }
     
     public boolean finish(){
+        this.exitCode = 0;
         changeContext(State.FINISHED); 
         if(getCurrentProcess()!=null){
             run();

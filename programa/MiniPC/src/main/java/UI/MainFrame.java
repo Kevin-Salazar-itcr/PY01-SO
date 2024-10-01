@@ -773,17 +773,23 @@ public final class MainFrame extends javax.swing.JFrame {
     }
     
     public void step(){
-        int limSup = this.cpu.getCurrentProcess().ownPCB.getDirEnd();
+        int limSup = 0;
+        try{
+            limSup = this.cpu.getCurrentProcess().ownPCB.getDirEnd();
+        }
+        catch(Exception e){return;}
         if(cpu.getPC()==limSup){
             this.PCBV.state.setText("FINISHED");
-            this.auto = false;
-            this.cli.print("Process ["+cpu.getCurrentProcess().ownPCB.getId()+"] in <"+cpu.getCurrentProcess().ownPCB.getDirBase()+"> finished with code 0");
+            this.cli.print("Process ["+cpu.getCurrentProcess().ownPCB.getId()+"] in <"+cpu.getCurrentProcess().ownPCB.getDirBase()+"> finished with code "+(cpu.exitCode==0?"0":"-1"));
             boolean fin = this.cpu.finish();
             this.fw.setEnabled(!fin);
             this.bw.setEnabled(true);
             if(fin){
+                this.autoButton.setEnabled(false);
+                this.auto = false;
                 return;
             }else{
+                this.auto = !autoButton.isEnabled();
                 setMemory();
                 step();
             }
