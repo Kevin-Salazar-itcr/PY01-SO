@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Stack;
@@ -40,6 +39,8 @@ public final class CPU {
     
     public int limInf = 0;
     public int limSup = 0;
+    
+    public int exitCode = 0; 
 
     public CPU() {
         this.waitingProcesses = new ArrayList<>();
@@ -286,6 +287,16 @@ public final class CPU {
         return null;
     }
     
+    public void updateRAM(int start, int end){
+        while (processScheduler.size() < 5 && !waitingProcesses.isEmpty()) {
+            addProcess(waitingProcesses.remove(0)); 
+        }
+        
+        for(int i = start; i<=end;i++){
+            this.ram.remove(i);
+        }
+    }
+    
     //updates the values in current process
     public void updateProcess(State state) {
         getCurrentProcess().ownPCB.setAX(getAX());
@@ -296,12 +307,17 @@ public final class CPU {
         getCurrentProcess().ownPCB.setAC(getAC());
         getCurrentProcess().ownPCB.setIR(getIR());
         getCurrentProcess().ownPCB.setStack(stack);
+        Process p = getCurrentProcess();
         getCurrentProcess().ownPCB.setState(state);
+        if(state == State.FINISHED){
+            this.processScheduler.remove(p);
+            updateRAM(p.ownPCB.getDirBase(), p.ownPCB.getDirEnd());
+        }
     }
 
     public void changeContext(State state) {
         if(getCurrentProcess()!=null){
-            updateProcess(state);
+            updateProcess(state);            
         }
         setAX(0);
         setBX(0);
@@ -333,7 +349,6 @@ public final class CPU {
     
     /**
      * Runs the process in queue 
-     * @return the current process
      */
     public void run(){
         setPC(getCurrentProcess().ownPCB.getPC());
@@ -357,8 +372,6 @@ public final class CPU {
     }
     
     public boolean finish(){
-        Process p = getCurrentProcess();
-        this.processScheduler.remove(p);
         changeContext(State.FINISHED); 
         if(getCurrentProcess()!=null){
             run();
@@ -368,12 +381,14 @@ public final class CPU {
     }
     
     //moves a process line to its last instruction
-    public void killProcess(){
+    public void killProcess(int exitcode){
         setPC(getCurrentProcess().ownPCB.getDirEnd());
+        this.exitCode = exitcode;
     }
     
     //listens a value from terminal
     public void listen(int value){
+        if(value>=256 || value <-256){killProcess(-1);}
         setDX(value);
         getCurrentProcess().ownPCB.setDX(value);
     }
@@ -545,7 +560,6 @@ public final class CPU {
                 this.setZeroFlag(res == 0? 1 : 0);
                 this.setSignFlag(res < 0? 1 : 0);
             }
-            
             case "1010" -> { //jumps
                 int startScope = getCurrentProcess().ownPCB.getDirBase();
                 int endScope = getCurrentProcess().ownPCB.getDirEnd();
@@ -592,10 +606,10 @@ public final class CPU {
                     default -> {break;}
                 }
             }
-            
             case "1011" -> { //param
                 String[] values = register.split(" ");
                 if(this.stack.size()+values.length > 5){
+                    killProcess(-1);
                     break;
                 }
                 int i = 0;
@@ -603,17 +617,17 @@ public final class CPU {
                    this.stack.push(Integer.valueOf(values[i++]));
                 }
             }
-            
             case "1100" -> { //push
                 if(this.stack.size() == 5){
+                    killProcess(-1);
                     break;
                 }
                 int regValue = getRegisterValue(register);
                 this.stack.push(regValue);
             }
-            
             case "1101" -> { //pop
                 if(this.stack.isEmpty()){
+                    killProcess(-1);
                     break;
                 }
                 int popValue = this.stack.pop();

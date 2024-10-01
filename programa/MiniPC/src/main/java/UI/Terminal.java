@@ -77,7 +77,7 @@ public class Terminal extends javax.swing.JFrame {
     }
 
     public void print(String text){
-        terminal.append("\n" + text + "\n> ");
+        terminal.append(text + "\n> ");
         promptIndex = terminal.getText().length();
         this.setVisible(true);
     }

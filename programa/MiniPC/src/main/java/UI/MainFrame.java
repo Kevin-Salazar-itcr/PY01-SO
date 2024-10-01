@@ -777,12 +777,14 @@ public final class MainFrame extends javax.swing.JFrame {
         if(cpu.getPC()==limSup){
             this.PCBV.state.setText("FINISHED");
             this.auto = false;
+            this.cli.print("Process ["+cpu.getCurrentProcess().ownPCB.getId()+"] in <"+cpu.getCurrentProcess().ownPCB.getDirBase()+"> finished with code 0");
             boolean fin = this.cpu.finish();
             this.fw.setEnabled(!fin);
             this.bw.setEnabled(true);
             if(fin){
                 return;
             }else{
+                setMemory();
                 step();
             }
         }
@@ -805,7 +807,7 @@ public final class MainFrame extends javax.swing.JFrame {
                         this.cli.print(String.valueOf(current.ownPCB.getDX()));
                         break;
                     }case "0011"->{ //int 20h
-                        this.cpu.killProcess();
+                        this.cpu.killProcess(0);
                         break;
                     }
                     default->{
@@ -817,6 +819,8 @@ public final class MainFrame extends javax.swing.JFrame {
             this.bw.setEnabled(true);
             this.pc.setText(String.valueOf(cpu.getPC()));
             this.ir.setText(cpu.getIR());
+            
+            this.PCBV.id.setText(String.valueOf(current.ownPCB.getId()));
             this.PCBV.pc.setText(String.valueOf(current.ownPCB.getPC()));
             this.PCBV.ir.setText(current.ownPCB.getIR());
             
