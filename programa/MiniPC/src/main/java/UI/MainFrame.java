@@ -26,7 +26,7 @@ public final class MainFrame extends javax.swing.JFrame {
     public CPU cpu;
     public Terminal cli;
     public MainFrame() {
-        this.config = new Config(this);
+        this.config = new Config(null);
         this.config.setVisible(false); 
         this.PCBV = new PCBViewer();
         this.PCBV.setVisible(false);
@@ -518,12 +518,12 @@ public final class MainFrame extends javax.swing.JFrame {
         if(changeMemory==0){
             this.cpu.resetMemory();
         }
-        else{
+        /*else{
             this.cpu.resetMemory(this.cpu.getSysSpace(), this.cpu.getUsrSpace());
         }
         this.usrCode.setText("");
         this.PCBV = new PCBViewer();
-        setMemory();
+        setMemory();*/
     }
     
     private void opOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opOpenActionPerformed
@@ -568,10 +568,10 @@ public final class MainFrame extends javax.swing.JFrame {
                 if(!SyntaxManager.getInstance(content).verifyInstructions()){
                     JOptionPane.showMessageDialog(null, "Invalid syntax detected on file", "Error", JOptionPane.ERROR_MESSAGE);
                 }else{
-                    if(content.split("\n").length>cpu.getSysSpace()){
+                    /*if(content.split("\n").length>cpu.getSysSpace()){
                         JOptionPane.showMessageDialog(null, "It'll cause overflow, please expand memory", "Warning", JOptionPane.WARNING_MESSAGE);
                         return;
-                    }
+                    }*/
                     reset(1);
                     this.run.setEnabled(true);
                     chargeMemory(content);
@@ -671,7 +671,8 @@ public final class MainFrame extends javax.swing.JFrame {
         this.bw.setEnabled(false);
         this.fw.setEnabled(true);
         
-        Logic.Process current = this.cpu.run();
+        this.cpu.run();
+        Logic.Process current = null;
         this.pc.setText(String.valueOf(current.ownPCB.getPC()));
         this.ir.setText(current.ownPCB.getIR());
         this.PCBV.pc.setText(String.valueOf(current.ownPCB.getPC()));

@@ -4,25 +4,64 @@
  */
 package UI;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.Properties;
 import javax.swing.JOptionPane;
 
 /**
  *
  * @author ksala
  */
-public class Config extends javax.swing.JFrame {
+public final class Config extends javax.swing.JFrame {
 
     /**
      * Creates new form Config
      */
-    public int sysSize = 10;
-    public int usrSize = 10;
-    public MainFrame current;
-    public Config(MainFrame f) {
+    public int sysSize = 6;
+    public int usrSize = 14;
+    public Interfaz current;
+    private int memoria = sysSize + usrSize;
+    private int mem2 = 40;
+    private int memV = 10;
+    private int particion = 4;
+    private String particionamiento = "Particionamiento fijo";
+    
+    public Config(Interfaz f) {
         initComponents();
+        leerProperties();
         this.current=f;
+        this.memPrinc.setText(String.valueOf(sysSize+usrSize));
+        this.os.setText(String.valueOf(sysSize));
+        this.usr.setText(String.valueOf(usrSize));
+        this.memSec.setText(String.valueOf(mem2));
+        this.memVirtual.setText(String.valueOf(memV));
+        this.tam.setText(String.valueOf(particion));  
+        this.tam.setVisible(false);
+        this.tamLabel.setVisible(false);
     }
-
+    public void seteo(){
+        this.memPrinc.setText(String.valueOf(sysSize+usrSize));
+        this.os.setText(String.valueOf(sysSize));
+        this.usr.setText(String.valueOf(usrSize));
+        this.memSec.setText(String.valueOf(mem2));
+        this.memVirtual.setText(String.valueOf(memV));
+        this.tam.setText(String.valueOf(particion));  
+        this.tam.setVisible(particionamiento.equals("Particionamiento dinamico"));
+        this.divMemoria.setSelectedItem(particionamiento);
+        this.tamLabel.setVisible(particionamiento.equals("Particionamiento dinamico"));
+    }
+    
+    public void setCurrentValues(int sys, int usr, int mem2, int memv, int particion, String particionamiento){
+        this.sysSize = sys;
+        this.usrSize = usr;
+        this.memoria = sys+usr;
+        this.mem2 = mem2;
+        this.memV = memv;
+        this.particion = particion;
+        this.particionamiento = particionamiento;
+        modificarProperties();
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -35,16 +74,28 @@ public class Config extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        os = new javax.swing.JTextField();
-        usr = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        os = new javax.swing.JTextField();
+        usr = new javax.swing.JTextField();
+        memPrinc = new javax.swing.JTextField();
+        memSec = new javax.swing.JTextField();
+        memVirtual = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        divMemoria = new javax.swing.JComboBox<>();
+        tamLabel = new javax.swing.JLabel();
+        tam = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
 
-        jLabel1.setText("Preferences");
+        jLabel1.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        jLabel1.setText("Preferencias");
 
-        jLabel2.setText("OS space");
+        jLabel2.setText("Tamaño del kernel");
 
-        jLabel3.setText("User space");
+        jLabel3.setText("Tamaño para usuario");
 
         jButton1.setText("Save");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -60,50 +111,173 @@ public class Config extends javax.swing.JFrame {
             }
         });
 
+        jLabel4.setText("Total de memoria principal");
+
+        jLabel5.setText("Total de memoria secundaria");
+
+        os.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                osCaretUpdate(evt);
+            }
+        });
+        os.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                osInputMethodTextChanged(evt);
+            }
+        });
+        os.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                osKeyPressed(evt);
+            }
+        });
+
+        usr.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                usrCaretUpdate(evt);
+            }
+        });
+        usr.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                usrKeyPressed(evt);
+            }
+        });
+
+        memPrinc.setEditable(false);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(os, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(usr, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(memPrinc, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(memSec, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(memVirtual, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(16, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(os, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(usr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(memPrinc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(memSec, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(memVirtual, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(8, Short.MAX_VALUE))
+        );
+
+        jLabel6.setText("Modo de división de memoria");
+
+        divMemoria.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Particionamiento fijo", "Particionamiento dinamico", "Paginacion" }));
+        divMemoria.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                divMemoriaItemStateChanged(evt);
+            }
+        });
+        divMemoria.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                divMemoriaActionPerformed(evt);
+            }
+        });
+
+        tamLabel.setText("Tamaño mínimo de partición");
+
+        jLabel7.setText("Memoria virtual");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(os, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(usr, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(146, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(16, 16, 16))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(39, 39, 39)
+                        .addComponent(jLabel1)
+                        .addGap(217, 217, 217))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(33, 33, 33)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel7))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(47, 47, 47)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(divMemoria, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(18, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(79, 79, 79)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(tam, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tamLabel))))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addGap(25, 25, 25)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(os, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(19, 19, 19)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(usr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
-                .addGap(21, 21, 21))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addComponent(jLabel2)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel4)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel5)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jButton1)
+                                    .addComponent(jButton2))
+                                .addGap(21, 21, 21))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel7)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(23, 23, 23)
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(divMemoria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tamLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 42, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(57, 57, 57))
         );
 
         pack();
@@ -118,26 +292,127 @@ public class Config extends javax.swing.JFrame {
         try{
             this.sysSize = Integer.parseInt(this.os.getText());
             this.usrSize = Integer.parseInt(this.usr.getText());
-            this.setVisible(false);
+            this.memoria = Integer.parseInt(this.memPrinc.getText());
+            this.mem2 = Integer.parseInt(this.memSec.getText());
+            this.memV = Integer.parseInt(this.memVirtual.getText());
+            this.particion = Integer.parseInt(this.tam.getText());
+            this.particionamiento = this.divMemoria.getSelectedItem().toString();
+            modificarProperties();
+            this.current.reset();
             
-            this.current.cpu.resetMemory(sysSize,usrSize);
-            this.current.reset(1);
-            this.current.setMemory();
+            this.dispose();
+            
         }
         catch(Exception e){
             JOptionPane.showMessageDialog(null, "Please verify sizes...", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void divMemoriaItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_divMemoriaItemStateChanged
+        System.out.println("Modo de particionamiento "+divMemoria.getSelectedItem().toString());
+        if(divMemoria.getSelectedIndex() == 1){
+            this.tam.setVisible(true);
+            this.tamLabel.setVisible(true);
+        }
+        else{
+            this.tam.setVisible(false);
+            this.tamLabel.setVisible(false);
+        }
+    }//GEN-LAST:event_divMemoriaItemStateChanged
 
+    private void osKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_osKeyPressed
+
+    }//GEN-LAST:event_osKeyPressed
+
+    private void divMemoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_divMemoriaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_divMemoriaActionPerformed
+
+    private void usrKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_usrKeyPressed
+        
+    }//GEN-LAST:event_usrKeyPressed
+
+    private void osInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_osInputMethodTextChanged
+        
+    }//GEN-LAST:event_osInputMethodTextChanged
+
+    private void osCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_osCaretUpdate
+        try{
+            this.sysSize = Integer.parseInt(this.os.getText());
+            this.usrSize = Integer.parseInt(this.usr.getText());
+            memPrinc.setText(String.valueOf(sysSize + usrSize));
+        }catch (Exception e){
+            this.memPrinc.setText("0");
+        }
+    }//GEN-LAST:event_osCaretUpdate
+
+    private void usrCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_usrCaretUpdate
+        try{
+            this.sysSize = Integer.parseInt(this.os.getText());
+            this.usrSize = Integer.parseInt(this.usr.getText());
+            memPrinc.setText(String.valueOf(sysSize + usrSize));
+        }catch (Exception e){
+            this.memPrinc.setText("0");
+        }
+    }//GEN-LAST:event_usrCaretUpdate
+
+    public void leerProperties() {
+        Properties properties = new Properties();
+        
+        try (FileInputStream input = new FileInputStream(System.getProperty("user.dir")+"\\config.properties")) {
+            properties.load(input);
+            
+            this.sysSize = Integer.parseInt(properties.getProperty("kernel", String.valueOf(this.sysSize)));
+            this.usrSize = Integer.parseInt(properties.getProperty("user", String.valueOf(this.usrSize)));
+            this.memoria = Integer.parseInt(properties.getProperty("memory", String.valueOf(this.memoria)));
+            this.mem2 = Integer.parseInt(properties.getProperty("disc", String.valueOf(this.mem2)));
+            this.memV = Integer.parseInt(properties.getProperty("memoryVirtual", String.valueOf(this.memV)));
+            this.particion = Integer.parseInt(properties.getProperty("PartitionSize", String.valueOf(this.particion)));
+            this.particionamiento = properties.getProperty("Type", this.particionamiento);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Método para modificar los valores en el archivo .properties usando los valores actuales de los componentes
+    public void modificarProperties() {
+        Properties properties = new Properties();
+        
+        // Establece las propiedades con los valores actuales de los componentes
+        properties.setProperty("kernel", String.valueOf(Integer.parseInt(this.os.getText())));
+        properties.setProperty("user", String.valueOf(Integer.parseInt(this.usr.getText())));
+        properties.setProperty("memory", String.valueOf(Integer.parseInt(this.memPrinc.getText())));
+        properties.setProperty("disc", String.valueOf(Integer.parseInt(this.memSec.getText())));
+        properties.setProperty("memoryVirtual", String.valueOf(Integer.parseInt(this.memVirtual.getText())));
+        properties.setProperty("PartitionSize", String.valueOf(Integer.parseInt(this.tam.getText())));
+        properties.setProperty("Type", this.particionamiento);
+
+        try (FileOutputStream output = new FileOutputStream(System.getProperty("user.dir")+"\\config.properties")) {
+            properties.store(output, "Actualización de configuración");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> divMemoria;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JTextField memPrinc;
+    private javax.swing.JTextField memSec;
+    private javax.swing.JTextField memVirtual;
     private javax.swing.JTextField os;
+    private javax.swing.JTextField tam;
+    private javax.swing.JLabel tamLabel;
     private javax.swing.JTextField usr;
     // End of variables declaration//GEN-END:variables
 }

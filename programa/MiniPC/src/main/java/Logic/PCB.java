@@ -4,25 +4,38 @@
  */
 package Logic;
 
+import java.util.ArrayList;
+import java.util.Stack;
+
 /**
  *
  * @author ksala
  */
 public class PCB {
-    private static int processID;
+    private static int processID = 0;
+    public int id;
     private State state;
     private int PC;
     private int AC;
     private String IR;
-    private int PCStart;
-    private int PCEnd;
+    private int dirBase = 0;
+    private int dirEnd = 0;
+    private int execStart = 0;
+    private int execEnd = 0;
     private int AX;
     private int BX;
     private int CX;
     private int DX;
+    private Stack<Integer> stack;
+    @Deprecated 
+    private ArrayList<String> IO_Info;
+    private int processSize;
+    private int prior;
+    public int burst = 0;
     
-    public PCB(State state){
-        processID++;
+    
+    public PCB(State state, int size){
+        this.id = ++processID;
         this.state = state;
         this.PC = 0;
         this.AC = 0;
@@ -31,10 +44,24 @@ public class PCB {
         this.CX = 0;
         this.DX = 0;
         this.IR = "0";
-        this.PCStart = this.PC;
-        this.PCEnd = 0; //not implemented yet
+        this.stack = new Stack<>();
+        this.IO_Info = new ArrayList<>();
+        this.processSize = size;
+        this.prior = processID;
     }
 
+    public int getBurst() {
+        return burst;
+    }
+
+    public void setBurst(int burst) {
+        this.burst += burst;
+    }
+
+    public int getId(){
+        return id;
+    }
+    
     public int getAX() {
         return AX;
     }
@@ -66,14 +93,6 @@ public class PCB {
     public void setDX(int DX) {
         this.DX = DX;
     } 
-    
-    public static int getProcessID() {
-        return processID;
-    }
-
-    public static void setProcessID(int processID) {
-        PCB.processID = processID;
-    }
     
     public State getState() {
         return state;
@@ -107,13 +126,59 @@ public class PCB {
         this.PC = PC;
     }
     
-    public int getPCStart() {
-        return PCStart;
+    public void setdirBase(int PC){
+        this.dirBase = PC;
+    }
+
+    public int getDirBase() {
+        return dirBase;
+    }
+
+    public void setDirBase(int dirBase) {
+        this.dirBase = dirBase;
+    }
+
+    public int getDirEnd() {
+        return dirEnd;
+    }
+
+    public void setDirEnd(int dirEnd) {
+        this.dirEnd = dirEnd;
+    }
+
+    public Stack<Integer> getStack() {
+        return stack;
+    }
+
+    public void setStack(Stack<Integer> stack) {
+        this.stack = stack;
+    }
+
+    public ArrayList<String> getIO_Info() {
+        return IO_Info;
+    }
+
+    public void setIO_Info(ArrayList<String> IO_Info) {
+        this.IO_Info = IO_Info;
+    }
+
+    public int getProcessSize() {
+        return processSize;
+    }
+
+    public void setProcessSize(int processSize) {
+        this.processSize = processSize;
+    }
+
+    public int getPrior() {
+        return prior;
+    }
+
+    public void setPrior(int prior) {
+        this.prior = prior;
     }
     
-    public void setPCStart(int PC){
-        this.PCStart = PC;
-    }
+    
     
     public void cleanRegisters(){
         setAC(0);
@@ -125,8 +190,8 @@ public class PCB {
 
     @Override
     public String toString() {
-        return "PCB{" + "\nstate=" + state + ", \nPC=" + PC + ", \nAC=" + AC + ", \nIR=" + IR + ", \nPCStart=" + PCStart + ", \nAX=" + AX + ", \nBX=" + BX + ", \nCX=" + CX + ", \nDX=" + DX + '}';
+        return "PCB{"+ "id="+ processID + ", state=" + state + ", PC=" + PC + ", AC=" + AC + ", IR=" + IR + ", dirBase=" + dirBase + ", dirEnd=" + dirEnd + ", execStart=" + execStart + ", execEnd=" + execEnd + ", AX=" + AX + ", BX=" + BX + ", CX=" + CX + ", DX=" + DX + ", stack=" + stack + ", IO_Info=" + IO_Info + ", processSize=" + processSize + ", prior=" + prior + ", burst=" + burst + '}';
     }
-    
+
     
 }

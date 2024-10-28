@@ -9,5 +9,9 @@ package Logic;
  * @author ksala
  */
 public enum State {
-    READY, RUNNING, FINISHED
+    NEW,
+    READY,
+    RUNNING,
+    BLOCKED,
+    FINISHED
 }
