@@ -5,6 +5,12 @@
 package Logic;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Random;
 import java.util.TreeMap;
 
 public class MemoryParser {
@@ -21,6 +27,9 @@ public class MemoryParser {
     private TreeMap<Integer, String> disco = new TreeMap<>();
     private ArrayList<Integer> particionesDinamicas = new ArrayList<>();
     private ArrayList<Process> listaEspera = new ArrayList<>();
+    public ArrayList<Process> listaProcesos = new ArrayList<>();
+    
+    public ArrayList<String> ejecucion = new ArrayList<>();
     
     // Constructor que inicializa todos los atributos
     public MemoryParser(int user, int kernel, int memSec, int memVirtual, String particionamiento, int tam) {
@@ -145,6 +154,18 @@ public class MemoryParser {
         else {
             res = asignacionDinamica(proceso, codigo);
         }
+        
+        if(listaProcesos.isEmpty()){
+            res.tiempoLlegada = 1;
+        }
+        else{
+            res.tiempoLlegada = new Random().nextInt(4) + 2;
+        }
+        if(!this.listaEspera.contains(res)){
+            res.ownPCB.setState(State.READY);
+            listaProcesos.add(res);    
+        }
+        
         return res;
     }
 
@@ -255,6 +276,7 @@ public class MemoryParser {
 
         return false;
     }
+    
     //devuelve la memoria en un string
     public String formattingRam() {
         StringBuilder sb = new StringBuilder();
@@ -268,6 +290,7 @@ public class MemoryParser {
         }
         return sb.toString();
     }
+    
     public String formattingDisc() {
         StringBuilder sb = new StringBuilder();
         for (Integer key : disco.keySet()) {
@@ -276,4 +299,209 @@ public class MemoryParser {
         return sb.toString();
     }
 
+    public PriorityQueue<Logic.Process> procesosEjeucionesSJF = new PriorityQueue<>(new Comparator<Logic.Process>() {
+        @Override
+        public int compare(Logic.Process p1, Logic.Process p2) {
+            return Integer.compare(p1.rafaga, p2.rafaga); // Orden ascendente por rafaga
+        }
+    });
+
+    // Comparator para ordenar por rafaga
+    Comparator<Logic.Process> comparadorPorRafaga = (Logic.Process p1, Logic.Process p2) -> Integer.compare(p1.rafaga, p2.rafaga); // Orden ascendente por rafaga
+    
+
+    // Método para ordenar procesos por tiempo de llegada
+    public void ordenarPorTiempoDeLlegada() {
+        Collections.sort(listaProcesos, new Comparator<Logic.Process>() {
+            @Override
+            public int compare(Logic.Process p1, Logic.Process p2) {
+                return Integer.compare(p1.tiempoLlegada, p2.tiempoLlegada);
+            }
+        });
+    }
+
+    public void FCFS() {
+        ejecucion.clear();
+        ordenarPorTiempoDeLlegada();
+        int tiempo = 1;
+
+        for (Logic.Process procs : listaProcesos) {
+            System.out.println(procs.tiempoLlegada);
+            while (procs.rafaga > 0) {
+                ejecucion.add(String.valueOf(procs.ownPCB.id));
+                procs.rafaga -= 1;
+                tiempo++;
+            }
+        }
+    }
+
+    public boolean verificarPorTiempo(int tiempo) {
+        for (Logic.Process procs : listaProcesos) {
+            if (procs.tiempoLlegada == tiempo) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Logic.Process obtenerProcesoTiempo(int tiempo) {
+        for (Logic.Process procs : listaProcesos) {
+            if (procs.tiempoLlegada == tiempo) {
+                return procs;
+            }
+        }
+        return null;
+    }
+
+    public void SJF() {
+        ejecucion.clear();
+        PriorityQueue<Logic.Process> procesosEjeuciones = new PriorityQueue<>(comparadorPorRafaga);
+        int tiempoEjecucion = 1;
+
+        for (Logic.Process p : listaProcesos) {
+            if (p.tiempoLlegada <= tiempoEjecucion) {
+                procesosEjeuciones.add(p);
+            }
+        }
+
+        while (!procesosEjeuciones.isEmpty()) {
+            Logic.Process procs = procesosEjeuciones.poll();
+
+            while (procs.rafaga > 0) {
+                ejecucion.add(String.valueOf(procs.ownPCB.id));
+                procs.rafaga -= 1;
+                tiempoEjecucion++;
+
+                
+                for (Logic.Process p : listaProcesos) {
+                    if (p.tiempoLlegada == tiempoEjecucion) {
+                        procesosEjeuciones.add(p);
+                    }
+                }
+
+            }
+        }
+    }
+
+    public void SRT() {
+        ejecucion.clear();
+        PriorityQueue<Logic.Process> procesosEjeuciones = new PriorityQueue<>(comparadorPorRafaga);
+        int tiempoEjecucion = 1;
+
+        for (Logic.Process p : listaProcesos) {
+            if (p.tiempoLlegada <= tiempoEjecucion) {
+                procesosEjeuciones.add(p);
+            }
+        }
+        Logic.Process procs = null;
+
+        while (!procesosEjeuciones.isEmpty() || procs != null) {
+
+            if (procs == null || !procesosEjeuciones.isEmpty() && procesosEjeuciones.peek().rafaga < procs.rafaga) {
+                if (procs != null) {
+                    procesosEjeuciones.add(procs);
+                }
+                procs = procesosEjeuciones.poll();
+            }
+
+            ejecucion.add(String.valueOf(procs.ownPCB.id));
+            procs.rafaga -= 1;
+            tiempoEjecucion++;
+
+            if (procs.rafaga == 0) {
+                procs = null;
+            }
+
+            for (Logic.Process p : listaProcesos) {
+                if (p.tiempoLlegada == tiempoEjecucion) {
+                    procesosEjeuciones.add(p);
+                }
+            }
+        }
+    }
+
+    public void RoundRobin(int quantum) {
+        ejecucion.clear();
+        Queue<Logic.Process> colaProcesos = new LinkedList<>();
+        int tiempoEjecucion = 1;
+
+        for (Logic.Process p : listaProcesos) {
+            if (p.tiempoLlegada <= tiempoEjecucion) {
+                colaProcesos.add(p);
+            }
+        }
+        
+        Logic.Process procs = null;
+        int tiempoRestanteQuantum = quantum;
+
+        while (!colaProcesos.isEmpty() || procs != null) {
+
+            if (procs == null) {
+                procs = colaProcesos.poll();
+                tiempoRestanteQuantum = quantum;
+            }
+            System.out.println("aqui");
+            ejecucion.add(String.valueOf(procs.ownPCB.id));
+            procs.rafaga -= 1;
+            tiempoEjecucion++;
+            tiempoRestanteQuantum--;
+
+            if (procs.rafaga == 0) {
+                procs = null;
+            } else if (tiempoRestanteQuantum == 0) {
+                colaProcesos.add(procs);
+                procs = null;
+            }
+
+            for (Logic.Process p : listaProcesos) {
+                if (p.tiempoLlegada == tiempoEjecucion) {
+                    colaProcesos.add(p);
+                }
+            }
+        }
+
+    }
+
+    // Método para calcular el Ratio de Respuesta
+    public double ResponseRatio(Logic.Process p, int tiempoActual) {
+        int tiempoEspera = tiempoActual - p.tiempoLlegada;
+        double RR = (tiempoEspera + p.rafaga) / p.rafaga;
+        return RR;
+    }
+
+    public void HRRN() {
+        ejecucion.clear();
+        ArrayList<Logic.Process> procesosListos = new ArrayList<>(listaProcesos); // Lista de procesos por ejecutar
+        int tiempoEjecucion = 1; // Tiempo actual en el que inicia la ejecución
+
+        while (!procesosListos.isEmpty()) {
+            // Calcular el ratio de respuesta para cada proceso que ha llegado
+            Logic.Process siguienteProceso = null;
+            double mayorRatio = -1; // Para encontrar el mayor ratio
+
+            for (Logic.Process p : procesosListos) {
+                if (p.tiempoLlegada <= tiempoEjecucion) { // Proceso ha llegado
+                    double ratioRespuesta = ResponseRatio(p, tiempoEjecucion);
+
+                    if (ratioRespuesta > mayorRatio) {
+                        mayorRatio = ratioRespuesta;
+                        siguienteProceso = p;
+                    }
+                }
+            }
+
+            if (siguienteProceso != null) {
+                // Ejecutar el proceso con el mayor ratio de respuesta
+                for (int i = 0; i < siguienteProceso.rafaga; i++) {
+                    ejecucion.add(String.valueOf(siguienteProceso.ownPCB.id)); // Registro de la ejecución
+                    tiempoEjecucion++;
+                }
+                // Eliminar el proceso de la lista de procesos listos
+                procesosListos.remove(siguienteProceso);
+            } else {
+                // Si ningún proceso está listo, avanzar el tiempo
+                tiempoEjecucion++;
+            }
+        }
+    }
 }

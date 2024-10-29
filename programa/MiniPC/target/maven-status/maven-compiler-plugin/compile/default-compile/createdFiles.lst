@@ -5,6 +5,7 @@ UI\PCBViewer$9.class
 UI\Terminal.class
 UI\MainFrame$14.class
 UI\MainFrame$17.class
+UI\Gantt$1.class
 UI\Interfaz$9.class
 UI\PCBViewer$5.class
 UI\Config$7.class
@@ -32,6 +33,7 @@ UI\Interfaz$4.class
 UI\MainFrame$12.class
 UI\MainFrame$19.class
 UI\PCBViewer$7.class
+Logic\MemoryParser$1.class
 Logic\SyntaxManager.class
 Logic\test.class
 UI\MainFrame$6.class
@@ -43,7 +45,6 @@ UI\Config$2.class
 UI\MainFrame$3.class
 UI\PCBViewer.class
 UI\Interfaz$1.class
-UI\Interfaz$10.class
 UI\Terminal$1.class
 UI\MainFrame$16.class
 Logic\CPU.class
@@ -55,9 +56,11 @@ UI\Config$9.class
 UI\CLI$1.class
 UI\Interfaz$5.class
 UI\MainFrame$2.class
+Logic\MemoryParser$2.class
 Logic\LoadFile.class
 UI\MainFrame$10.class
 UI\Config$6.class
+UI\Gantt.class
 UI\Interfaz$2.class
 UI\Config$3.class
 UI\MainFrame$9.class

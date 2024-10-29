@@ -6,6 +6,8 @@ package UI;
 
 import Logic.LoadFile;
 import Logic.MemoryParser;
+import Logic.State;
+import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -31,7 +33,6 @@ public class Interfaz extends javax.swing.JFrame {
      */
     public Interfaz() {
         initComponents();
-        this.paso.setVisible(false);
         this.auto.setVisible(false);
         leerProperties();
         this.m = new MemoryParser(user, kernel, disc, virtual, modo, particion);
@@ -85,11 +86,10 @@ public class Interfaz extends javax.swing.JFrame {
         jScrollPane4 = new javax.swing.JScrollPane();
         memoria = new javax.swing.JTextPane();
         execButton = new javax.swing.JButton();
-        jScrollPane5 = new javax.swing.JScrollPane();
+        gantt = new javax.swing.JScrollPane();
         jLabel4 = new javax.swing.JLabel();
         algoritmo = new javax.swing.JComboBox<>();
         configuracion = new javax.swing.JButton();
-        paso = new javax.swing.JButton();
         auto = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -220,7 +220,7 @@ public class Interfaz extends javax.swing.JFrame {
 
         jLabel4.setText("Diagrama de Gantt");
 
-        algoritmo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FCFS", "SRT", "SPN", "RR", "HRRN" }));
+        algoritmo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FCFS", "SRT", "SJF", "RR", "HRRN" }));
         algoritmo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 algoritmoItemStateChanged(evt);
@@ -231,13 +231,6 @@ public class Interfaz extends javax.swing.JFrame {
         configuracion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configuracionActionPerformed(evt);
-            }
-        });
-
-        paso.setText("paso a paso");
-        paso.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pasoActionPerformed(evt);
             }
         });
 
@@ -258,7 +251,7 @@ public class Interfaz extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel4)
-                            .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(gantt, javax.swing.GroupLayout.PREFERRED_SIZE, 600, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -283,9 +276,7 @@ public class Interfaz extends javax.swing.JFrame {
                                 .addComponent(algoritmo, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(36, 36, 36)
                                 .addComponent(execButton, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(paso, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGap(110, 110, 110)
                                 .addComponent(auto, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(26, 26, 26))))
         );
@@ -298,8 +289,7 @@ public class Interfaz extends javax.swing.JFrame {
                             .addContainerGap()
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(execButton)
-                                .addComponent(algoritmo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(paso)))
+                                .addComponent(algoritmo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGroup(layout.createSequentialGroup()
                             .addGap(12, 12, 12)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -318,7 +308,7 @@ public class Interfaz extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel4)
                 .addGap(5, 5, 5)
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                .addComponent(gantt, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -365,10 +355,59 @@ public class Interfaz extends javax.swing.JFrame {
     
     private void execButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_execButtonActionPerformed
         this.algoritmo.setEnabled(!algoritmo.isEnabled());
-        this.paso.setVisible(!paso.isVisible());
         this.auto.setVisible(!auto.isVisible());
+        
+        switch(this.algoritmo.getSelectedItem().toString()){
+            case "FCFS" -> this.m.FCFS();
+            case "SJF" -> this.m.SJF();
+            case "SRT" -> this.m.SRT();
+            case "RR" -> this.m.RoundRobin(1);
+            default -> this.m.HRRN();
+        }
+        
+        System.out.println(this.m.ejecucion.toString());
+        Logic.Process actual = null;
+        int indice = 0;
+        int contador = 0;
+        // buscar el proceso 1
+        for(Logic.Process p: this.m.listaProcesos){
+            if(p.ownPCB.id == Integer.parseInt(m.ejecucion.get(indice))){
+                actual = p;
+                actual.ownPCB.setState(State.RUNNING);
+            }
+        }
+        for(String s: m.ejecucion){
+            
+        }
+        
+        /*
+        1 buscar el primer proceso
+        2 ponerlo en running
+        2.5 guardar el primer objeto de la lista de ejecuciones
+        3 ir iterando sobre la lista de ejecucion
+            si el valor cambia, pregunta si el contador 
+        */
+        
+        
+        
+        
+        
+        
+        //mostrarGantt();
     }//GEN-LAST:event_execButtonActionPerformed
 
+    public void ejecucion(){
+        
+    }
+    
+    public void mostrarGantt() {
+        Gantt ganttChartPanel = new Gantt(this.m);
+
+        gantt.setViewportView(ganttChartPanel);
+        gantt.revalidate(); // Actualiza el JScrollPane
+        gantt.repaint(); // Redibuja el JScrollPane para mostrar el contenido
+    }
+    
     private void cargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cargarActionPerformed
         LoadFile.call().limpiar();
         LoadFile.call().openFiles();
@@ -395,10 +434,6 @@ public class Interfaz extends javax.swing.JFrame {
         co.seteo();
         co.setVisible(true);
     }//GEN-LAST:event_configuracionActionPerformed
-
-    private void pasoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pasoActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_pasoActionPerformed
 
     private void autoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoActionPerformed
         // TODO add your handling code here:
@@ -446,6 +481,7 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JButton cargar;
     private javax.swing.JButton configuracion;
     private javax.swing.JButton execButton;
+    private javax.swing.JScrollPane gantt;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -457,9 +493,7 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
     public javax.swing.JTextPane memoria;
-    private javax.swing.JButton paso;
     private javax.swing.JTextPane procesos;
     public javax.swing.JTextPane ram;
     private javax.swing.JButton reiniciar;

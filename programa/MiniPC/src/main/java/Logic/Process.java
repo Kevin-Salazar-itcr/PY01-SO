@@ -17,12 +17,16 @@ public class Process {
     public String startHour;
     public String finsHour;
     public long totalTime = 0; 
+    
+    public int rafaga;
+    public int tiempoLlegada;
 
     public PCB ownPCB;
     
     public Process(String file){
         setFileContent(new ArrayList<>(Arrays.asList(file.split("\n"))));
         this.ownPCB = new PCB(State.NEW, getFileContent().size());
+        this.rafaga = fileContent.size();
     }
     
     public final ArrayList<String> getFileContent(){

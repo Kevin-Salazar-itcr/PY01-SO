@@ -29,7 +29,7 @@
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                          <Component id="jScrollPane5" min="-2" pref="600" max="-2" attributes="0"/>
+                          <Component id="gantt" min="-2" pref="600" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
@@ -61,9 +61,7 @@
                               <Component id="algoritmo" min="-2" pref="154" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
                               <Component id="execButton" min="-2" pref="98" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="paso" min="-2" pref="98" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="110" max="-2" attributes="0"/>
                               <Component id="auto" min="-2" pref="98" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -83,7 +81,6 @@
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="execButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="algoritmo" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="paso" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
@@ -110,7 +107,7 @@
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-              <Component id="jScrollPane5" pref="252" max="32767" attributes="0"/>
+              <Component id="gantt" pref="252" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -339,7 +336,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="execButtonActionPerformed"/>
       </Events>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="jScrollPane5">
+    <Container class="javax.swing.JScrollPane" name="gantt">
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
     </Container>
@@ -354,7 +351,7 @@
           <StringArray count="5">
             <StringItem index="0" value="FCFS"/>
             <StringItem index="1" value="SRT"/>
-            <StringItem index="2" value="SPN"/>
+            <StringItem index="2" value="SJF"/>
             <StringItem index="3" value="RR"/>
             <StringItem index="4" value="HRRN"/>
           </StringArray>
@@ -373,14 +370,6 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="configuracionActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="paso">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="paso a paso"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="pasoActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="auto">

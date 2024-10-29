@@ -190,7 +190,7 @@ public class PCB {
 
     @Override
     public String toString() {
-        return "PCB{"+ "id="+ processID + ", state=" + state + ", PC=" + PC + ", AC=" + AC + ", IR=" + IR + ", dirBase=" + dirBase + ", dirEnd=" + dirEnd + ", execStart=" + execStart + ", execEnd=" + execEnd + ", AX=" + AX + ", BX=" + BX + ", CX=" + CX + ", DX=" + DX + ", stack=" + stack + ", IO_Info=" + IO_Info + ", processSize=" + processSize + ", prior=" + prior + ", burst=" + burst + '}';
+        return "PCB{"+ "id="+ id + ", state=" + state + ", PC=" + PC + ", AC=" + AC + ", IR=" + IR + ", dirBase=" + dirBase + ", dirEnd=" + dirEnd + ", execStart=" + execStart + ", execEnd=" + execEnd + ", AX=" + AX + ", BX=" + BX + ", CX=" + CX + ", DX=" + DX + ", stack=" + stack + ", IO_Info=" + IO_Info + ", processSize=" + processSize + ", prior=" + prior + ", burst=" + burst + '}';
     }
 
     
