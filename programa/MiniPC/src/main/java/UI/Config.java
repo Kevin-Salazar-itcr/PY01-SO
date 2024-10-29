@@ -397,7 +397,7 @@ public final class Config extends javax.swing.JFrame {
         properties.setProperty("memoryVirtual", String.valueOf(Integer.parseInt(this.memVirtual.getText())));
         properties.setProperty("PartitionSize", String.valueOf(Integer.parseInt(this.tam.getText())));
         properties.setProperty("Type", this.particionamiento);
-        properties.setProperty("PartitionSize", String.valueOf(Integer.parseInt(this.quantumSpace.getText())));
+        properties.setProperty("Quantum", String.valueOf(Integer.parseInt(this.quantumSpace.getText())));
         
 
         try (FileOutputStream output = new FileOutputStream(System.getProperty("user.dir")+"\\config.properties")) {

@@ -23,7 +23,7 @@ public class MemoryParser {
     int userStartIndex;
     int ultimaPosicion;
     
-    private TreeMap<Integer, String> ram = new TreeMap<>();
+    public TreeMap<Integer, String> ram = new TreeMap<>();
     private TreeMap<Integer, String> disco = new TreeMap<>();
     private ArrayList<Integer> particionesDinamicas = new ArrayList<>();
     private ArrayList<Process> listaEspera = new ArrayList<>();

@@ -8,12 +8,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import Logic.MemoryParser;
-import java.util.ArrayList;
 
 public class Gantt extends JPanel {
 
     private MemoryParser cpu;
-    private int timeUnitWidth = 50; // Ancho de cada unidad de tiempo
+    private int timeUnitWidth = 20; // Ancho de cada unidad de tiempo
     private int processHeight = 30; // Altura de cada proceso
     private int currentStep = 0; // Paso actual para mostrar la ejecución paso a paso
 

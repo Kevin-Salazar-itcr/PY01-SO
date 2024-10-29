@@ -34,6 +34,7 @@ UI\Interfaz$5.class
 Logic\MemoryParser$2.class
 UI\Config$1.class
 UI\Interfaz.class
+Logic\Ejecutor.class
 UI\Interfaz$7.class
 Logic\LoadFile.class
 UI\Config$8.class

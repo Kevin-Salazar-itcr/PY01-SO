@@ -4,6 +4,7 @@
  */
 package UI;
 
+import Logic.Ejecutor;
 import Logic.LoadFile;
 import Logic.MemoryParser;
 import Logic.State;
@@ -25,11 +26,12 @@ public class Interfaz extends javax.swing.JFrame {
     public int virtual = 10 ;
     public int particion = 4;
     public String modo = "Particionamiento fijo";
-    public int quantum;
+    public int quantum = 1;
     
     public MemoryParser m;
     
     int indiceProceso = 0;
+    public Ejecutor ejecutor = new Ejecutor();
     
     public PCBViewer pcb = new PCBViewer();
     /**
@@ -427,8 +429,7 @@ public class Interfaz extends javax.swing.JFrame {
             default -> this.m.HRRN();
         }
         
-        System.out.println(this.m.ejecucion.toString());
-                //mostrarGantt();
+        mostrarGantt();
     }//GEN-LAST:event_execButtonActionPerformed
 
     public Logic.Process buscarProceso(int i){
@@ -536,7 +537,13 @@ public class Interfaz extends javax.swing.JFrame {
         }
         for(Logic.Process x: m.listaProcesos){
             this.editarFilaPorId(x.id, x.ownPCB.getState().toString());
-            if(x.ownPCB.getState().toString().equals("RUNNING")){x.ownPCB.setPC(x.ownPCB.getPC()+1);}
+            if(x.ownPCB.getState().toString().equals("RUNNING")){
+                x.ownPCB.setPC(x.ownPCB.getPC()+1);
+                x.ownPCB.setIR(m.ram.get(x.ownPCB.getPC()-1));
+                ejecutor.setProcess(x);
+                x = ejecutor.getProcess();
+            
+            }
             this.initTablaProcesos();
         }
         
