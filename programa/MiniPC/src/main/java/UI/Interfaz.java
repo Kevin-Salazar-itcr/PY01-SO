@@ -8,10 +8,24 @@ import Logic.Ejecutor;
 import Logic.LoadFile;
 import Logic.MemoryParser;
 import Logic.State;
+import Logic.SyntaxManager;
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JLabel;
+import javax.swing.JScrollBar;
+import javax.swing.JTable;
+import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 
 /**
  *
@@ -23,17 +37,24 @@ public class Interfaz extends javax.swing.JFrame {
     public int user = 14;
     public int memory = 20;
     public int disc = 40;
-    public int virtual = 10 ;
+    public int virtual = 10;
     public int particion = 4;
     public String modo = "Particionamiento fijo";
     public int quantum = 1;
-    
+
     public MemoryParser m;
-    
+
     int indiceProceso = 0;
     public Ejecutor ejecutor = new Ejecutor();
-    
+
     public PCBViewer pcb = new PCBViewer();
+
+    private DefaultTableModel model;
+    private ArrayList<String> tareas = new ArrayList<>();
+    private ArrayList<String> valores = new ArrayList<>();
+    private boolean fin = false;
+    private Timer timer;
+
     /**
      * Creates new form Interfaz
      */
@@ -47,12 +68,12 @@ public class Interfaz extends javax.swing.JFrame {
         this.memoria.setText(this.m.formattingDisc());
     }
 
-    public final void leerProperties(){
+    public final void leerProperties() {
         Properties properties = new Properties();
-        
-        try (FileInputStream input = new FileInputStream(System.getProperty("user.dir")+"\\config.properties")) {
+
+        try (FileInputStream input = new FileInputStream(System.getProperty("user.dir") + "\\config.properties")) {
             properties.load(input);
-            
+
             this.kernel = Integer.parseInt(properties.getProperty("kernel"));
             this.user = Integer.parseInt(properties.getProperty("user"));
             this.memory = Integer.parseInt(properties.getProperty("memory"));
@@ -61,11 +82,11 @@ public class Interfaz extends javax.swing.JFrame {
             this.particion = Integer.parseInt(properties.getProperty("PartitionSize"));
             this.modo = properties.getProperty("Type");
             this.quantum = Integer.parseInt(properties.getProperty("Quantum"));
-            
+
         } catch (Exception e) {
         }
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -88,17 +109,21 @@ public class Interfaz extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        ramEspacio = new javax.swing.JScrollPane();
         ram = new javax.swing.JTextPane();
         jScrollPane4 = new javax.swing.JScrollPane();
         memoria = new javax.swing.JTextPane();
         execButton = new javax.swing.JButton();
         gantt = new javax.swing.JScrollPane();
+        ganttTable = new javax.swing.JTable();
         jLabel4 = new javax.swing.JLabel();
         algoritmo = new javax.swing.JComboBox<>();
         configuracion = new javax.swing.JButton();
         paso = new javax.swing.JButton();
         auto = new javax.swing.JButton();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        codigoProceso = new javax.swing.JTextPane();
+        jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -174,19 +199,19 @@ public class Interfaz extends javax.swing.JFrame {
 
         jLabel3.setText("Memoria principal");
 
-        jScrollPane3.setViewportView(ram);
+        ramEspacio.setViewportView(ram);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(ramEspacio, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(ramEspacio, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         jScrollPane4.setViewportView(memoria);
@@ -226,6 +251,18 @@ public class Interfaz extends javax.swing.JFrame {
             }
         });
 
+        gantt.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+        ganttTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null}
+            },
+            new String [] {
+                "Title 1"
+            }
+        ));
+        gantt.setViewportView(ganttTable);
+
         jLabel4.setText("Diagrama de Gantt");
 
         algoritmo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FCFS", "SRT", "SJF", "RR", "HRRN" }));
@@ -256,6 +293,10 @@ public class Interfaz extends javax.swing.JFrame {
             }
         });
 
+        jScrollPane3.setViewportView(codigoProceso);
+
+        jLabel5.setText("Codigo del proceso actual");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -273,11 +314,13 @@ public class Interfaz extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 360, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(68, 68, 68)
-                                        .addComponent(verBCP, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                        .addComponent(verBCP, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jScrollPane3)
+                                    .addComponent(jLabel5)))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(cargar, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
@@ -317,16 +360,22 @@ public class Interfaz extends javax.swing.JFrame {
                     .addComponent(auto, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel4))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(verBCP)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel4)
-                .addGap(5, 5, 5)
-                .addComponent(gantt, javax.swing.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel5)
+                        .addGap(10, 10, 10)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addComponent(gantt, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -334,24 +383,34 @@ public class Interfaz extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    public Logic.Process buscarProceso2(int i){
+    public Logic.Process buscarProceso2(int i) {
         Logic.Process actual = null;
         int x = 0;
-        for(Logic.Process p: this.m.listaProcesos){
-            if(p.id == i){
+        for (Logic.Process p : this.m.listaProcesos) {
+            if (p.id == i) {
                 actual = p;
                 break;
             }
             x++;
         }
+        if (actual == null) {
+            x = 0;
+            for (Logic.Process p : this.m.listaEspera) {
+                if (p.id == i) {
+                    actual = p;
+                    break;
+                }
+                x++;
+            }
+        }
         return actual;
     }
-    
+
     private void verBCPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verBCPActionPerformed
         mostrarPCB();
     }//GEN-LAST:event_verBCPActionPerformed
 
-    public void mostrarPCB(){
+    public void mostrarPCB() {
         int selectedRow = bcps.getSelectedRow(); // Obtener el índice de la fila seleccionada
 
         if (selectedRow != -1) { // Verificar que haya una fila seleccionada
@@ -359,18 +418,17 @@ public class Interfaz extends javax.swing.JFrame {
             System.out.println("BCP ID seleccionado: " + bcpId);
             this.pcb.update(buscarProceso2(bcpId));
             this.pcb.state.setText(bcps.getValueAt(selectedRow, 2).toString());
-            if(pcb.isVisible()){
+            if (pcb.isVisible()) {
                 pcb.repaint();
                 pcb.setVisible(true);
-            }
-            else{
+            } else {
                 this.pcb.setVisible(true);
             }
         } else {
             System.out.println("No se ha seleccionado ninguna fila.");
         }
     }
-    
+
     private void reiniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reiniciarActionPerformed
         reset();
     }//GEN-LAST:event_reiniciarActionPerformed
@@ -379,7 +437,7 @@ public class Interfaz extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) bcps.getModel();
         model.addRow(new Object[]{bcpId, memDir, estado});
     }
-    
+
     public void eliminarFilaPorId(int bcpId) {
         DefaultTableModel model = (DefaultTableModel) bcps.getModel();
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -389,6 +447,7 @@ public class Interfaz extends javax.swing.JFrame {
             }
         }
     }
+
     public void editarFilaPorId(int bcpId, String nuevoEstado) {
         DefaultTableModel model = (DefaultTableModel) bcps.getModel();
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -404,39 +463,64 @@ public class Interfaz extends javax.swing.JFrame {
         model.setRowCount(0); // Establece el número de filas en 0, eliminando todas las filas
     }
 
-
-    public void reset(){
+    public void reset() {
         this.setVisible(false);
         this.dispose();
 
         new Interfaz().setVisible(true);
     }
-    
+
     private void execButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_execButtonActionPerformed
-        if(this.m.listaProcesos.isEmpty()){
+        ejecutarProcesos();
+    }//GEN-LAST:event_execButtonActionPerformed
+
+    public void ejecutarProcesos() {
+        if (this.m.listaProcesos.isEmpty()) {
+            this.m.limpiar();
+            ArrayList<Logic.Process> despachados = new ArrayList<>();
+            ArrayList<ArrayList<String>> codigos = new ArrayList<>();
+            ArrayList<Integer> indices = new ArrayList<>();
+            for (int i = 0; (i < m.listaEspera.size() && i < 5); i++) {
+                SyntaxManager.getInstance(String.join("\n", m.listaEspera.get(i).getFileContent()));
+                despachados.add(m.listaEspera.get(i));
+                codigos.add(SyntaxManager.getInstance().getBinaryInstructions());
+            }
+            for (int x : indices) {
+                m.listaEspera.remove(x);
+            }
+            System.out.println(despachados.size());
+            for (int i = 0; i < despachados.size(); i++) {
+                this.cargarAMemoria(despachados.get(i), codigos.get(i));
+            }
+            actualizarInterfaz();
             return;
         }
         this.algoritmo.setEnabled(false);
         this.auto.setVisible(true);
         this.execButton.setEnabled(false);
         this.paso.setVisible(true);
-        
-        switch(this.algoritmo.getSelectedItem().toString()){
-            case "FCFS" -> this.m.FCFS();
-            case "SJF" -> this.m.SJF();
-            case "SRT" -> this.m.SRT();
-            case "RR" -> this.m.RoundRobin(this.quantum);
-            default -> this.m.HRRN();
-        }
-        
-        mostrarGantt();
-    }//GEN-LAST:event_execButtonActionPerformed
 
-    public Logic.Process buscarProceso(int i){
+        switch (this.algoritmo.getSelectedItem().toString()) {
+            case "FCFS" ->
+                this.m.FCFS();
+            case "SJF" ->
+                this.m.SJF();
+            case "SRT" ->
+                this.m.SRT();
+            case "RR" ->
+                this.m.RoundRobin(this.quantum);
+            default ->
+                this.m.HRRN();
+        }
+
+        prepararGantt();
+    }
+
+    public Logic.Process buscarProceso(int i) {
         Logic.Process actual = null;
         int x = 0;
-        for(Logic.Process p: this.m.listaProcesos){
-            if(p.id == i){
+        for (Logic.Process p : this.m.listaProcesos) {
+            if (p.id == i) {
                 actual = p;
                 actual.ownPCB.setState(State.RUNNING);
                 actual.rafaga++;
@@ -448,41 +532,94 @@ public class Interfaz extends javax.swing.JFrame {
         return actual;
     }
 
-    public void initTablaProcesos(){
+    private void prepararGantt() {
+        this.tareas = m.ejecucion;
+        valores.clear();
+        for (Logic.Process p : m.listaProcesos) {
+            valores.add(String.valueOf(p.id));
+        }
+
+        // Configura el modelo de la tabla con celdas no editables
+        model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        // Añadir columna "Tarea"
+        model.addColumn("Tarea");
+        // Añadir filas para cada valor inicial
+        valores.forEach(valor -> model.addRow(new Object[]{valor}));
+
+        // Asignar el modelo a la tabla ganttTable
+        ganttTable.setModel(model);
+        ganttTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        // Configurar el renderizador de celdas para mostrar el diagrama de Gantt
+        ganttTable.setDefaultRenderer(Object.class, (tbl, value, isSelected, hasFocus, row, column) -> {
+            JLabel cell = new JLabel(value == null ? "" : value.toString(), JLabel.CENTER);
+            cell.setOpaque(true);
+            cell.setBackground("█".equals(value) ? Color.BLUE : Color.WHITE);
+            return cell;
+        });
+
+    }
+
+    private void agregarColumna() {
+        if (indiceProceso < tareas.size()) {
+            model.addColumn(String.valueOf(indiceProceso + 1)); // Añadir una nueva columna numerada
+            String tarea = tareas.get(indiceProceso); // Obtener la tarea en el índice actual
+
+            // Rellenar la celda en la fila correspondiente a la tarea
+            for (int i = 0; i < valores.size(); i++) {
+                if (valores.get(i).equals(tarea)) {
+                    model.setValueAt("█", i, model.getColumnCount() - 1);
+                    break;
+                }
+            }
+
+            // Mover el scrollbar al final para seguir las columnas añadidas
+            JScrollBar horizontalScrollBar = gantt.getHorizontalScrollBar();
+            horizontalScrollBar.setValue(horizontalScrollBar.getMaximum());
+        }
+    }
+
+    public void initTablaProcesos() {
         String res = "";
-        for(Logic.Process x: m.listaProcesos){
-            res+= "Proceso "+ x.id+"->"+x.ownPCB.getState().toString()+"\n";
+        for (Logic.Process x : m.listaProcesos) {
+            res += "Proceso " + x.id + "->" + x.ownPCB.getState().toString() + "\n";
         }
         this.procesos.setText(res);
     }
-    
-    public void mostrarGantt() {
-        Gantt ganttChartPanel = new Gantt(this.m);
 
-        gantt.setViewportView(ganttChartPanel);
-        gantt.revalidate(); // Actualiza el JScrollPane
-        gantt.repaint(); // Redibuja el JScrollPane para mostrar el contenido
-    }
-    
     private void cargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cargarActionPerformed
         LoadFile.call().limpiar();
         LoadFile.call().openFiles();
-        
+
         ArrayList<ArrayList<String>> codigos = LoadFile.call().codigos;
         ArrayList<Logic.Process> p = LoadFile.call().procesos;
-        
-        for(int i=0; i<codigos.size(); i++){
-            Logic.Process proceso = this.m.asignarProceso(p.get(i), codigos.get(i));
-            agregarFila(proceso.ownPCB.id, proceso.ownPCB.getPC(), proceso.ownPCB.getState().toString());
+
+        for (int i = 0; i < codigos.size(); i++) {
+            cargarAMemoria(p.get(i), codigos.get(i));
         }
-        
+
+        actualizarInterfaz();
+    }//GEN-LAST:event_cargarActionPerformed
+
+    public void cargarAMemoria(Logic.Process p, ArrayList<String> codigo) {
+        Logic.Process proceso = this.m.asignarProceso(p, codigo);
+        agregarFila(proceso.ownPCB.id, proceso.ownPCB.getPC(), proceso.ownPCB.getState().toString());
+    }
+
+    public void actualizarInterfaz() {
         ram.setText(m.formattingRam());
         memoria.setText(m.formattingDisc());
         this.initTablaProcesos();
-    }//GEN-LAST:event_cargarActionPerformed
+    }
 
     private void algoritmoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_algoritmoItemStateChanged
-        System.out.println("algoritmo seleccionado: "+algoritmo.getSelectedItem().toString());
+        System.out.println("algoritmo seleccionado: " + algoritmo.getSelectedItem().toString());
     }//GEN-LAST:event_algoritmoItemStateChanged
 
     private void configuracionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configuracionActionPerformed
@@ -492,75 +629,175 @@ public class Interfaz extends javax.swing.JFrame {
         co.setVisible(true);
     }//GEN-LAST:event_configuracionActionPerformed
 
+    public void highlightLine(int indice) {
+        Highlighter highlighter = ram.getHighlighter();
+        highlighter.removeAllHighlights();
+
+        try {
+            String text = ram.getText();
+            int startIndex = text.indexOf(indice + ":");
+
+            if (startIndex != -1) {
+                int endIndex = text.indexOf("\n", startIndex);
+                endIndex = (endIndex == -1) ? text.length() : endIndex;
+
+                // Resaltar el texto
+                highlighter.addHighlight(startIndex, endIndex, new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW));
+
+                // Enfocar el área resaltada
+                Rectangle viewRect = ram.modelToView(startIndex);
+                ram.scrollRectToVisible(viewRect);
+            }
+
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void autoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoActionPerformed
-        // TODO add your handling code here:
+        fin = false;
+
+        // Configurar el timer para ejecutar cada segundo
+        timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!fin) {
+                    ejecutar(); // Ejecuta la acción que modifica la interfaz
+                } else {
+                    timer.stop(); // Detiene el timer cuando se establece fin = true
+                }
+            }
+        });
+
+        // Iniciar el timer
+        timer.start();
     }//GEN-LAST:event_autoActionPerformed
 
     private void pasoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pasoActionPerformed
+        ejecutar();
+    }//GEN-LAST:event_pasoActionPerformed
+
+    public void ejecutar() {
         String actual;
-        
-        if(pcb.isVisible()){
+
+        if (pcb.isVisible()) {
             pcb.repaint();
             pcb.setVisible(true);
         }
-        if(m.listaProcesos.isEmpty()){
+        if (m.listaProcesos.isEmpty()) {
             return;
         }
-        try{
+        try {
             actual = m.ejecucion.get(indiceProceso);
-        }catch(Exception e){
+        } catch (Exception e) {
             this.execButton.setEnabled(true);
             this.algoritmo.setEnabled(true);
             this.auto.setVisible(false);
             this.paso.setVisible(false);
-            for(Logic.Process x: m.listaProcesos){
-                if(x.ownPCB.getState().toString().equals("RUNNING")){x.ownPCB.setState(State.FINISHED);}
+            for (Logic.Process x : m.listaProcesos) {
+                if (x.ownPCB.getState().toString().equals("RUNNING")) {
+                    x.ownPCB.setState(State.FINISHED);
+                    int tllegada = x.tiempoLlegada;
+                    int tfin = indiceProceso;
+                    int rafaga = x.rafaga;
+                    int turnaround = tfin-tllegada;
+                    double estadistica = (double)turnaround/(double)rafaga;
+
+                    System.out.println("***********************************");
+                    System.out.println("Estadistica para proceso "+x.id);
+                    System.out.println("arrival time: "+tllegada);
+                    System.out.println("Finish time: "+tfin);
+                    System.out.println("rafaga: "+rafaga);
+                    System.out.println("Turnaround Time: "+turnaround);
+                    System.out.println("Tr/Ts: "+estadistica);
+                    System.out.println("***********************************");
+                    x.tiempoFin = tfin;
+                    x.turnaround = turnaround;
+                    x.trTs = estadistica;
+                }
                 this.editarFilaPorId(x.id, x.ownPCB.getState().toString());
                 this.initTablaProcesos();
-                
             }
+            ArrayList<ArrayList<Double>> estadisticas = new ArrayList<>();
+            for (Logic.Process x : m.listaProcesos) {
+                ArrayList<Double> datos = new ArrayList<>();
+                datos.add((double)x.id);
+                datos.add((double)x.tiempoLlegada);
+                datos.add((double)x.tiempoFin);
+                datos.add((double)x.rafaga);
+                datos.add((double)x.turnaround);
+                datos.add(x.trTs);
+                
+                estadisticas.add(datos);
+            }
+            Estadisticas estad = new Estadisticas(estadisticas);
             m.limpiar();
             System.out.println("limpio");
             this.ram.setText(m.formattingRam());
             this.limpiarTabla();
             this.m.listaProcesos.clear();
             this.m.ejecucion.clear();
+            this.codigoProceso.setText("");
             this.indiceProceso = 0;
+            fin = true;
             return;
         }
         Logic.Process proceso;
-        try{
+        try {
             proceso = this.buscarProceso(Integer.parseInt(actual));
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             return;
         }
-        for(Logic.Process x: m.listaProcesos){
+        String codigo = "";
+        for (String s : proceso.getFileContent()) {
+            codigo += s + "\n";
+        }
+        this.codigoProceso.setText(codigo);
+
+        for (Logic.Process x : m.listaProcesos) {
             this.editarFilaPorId(x.id, x.ownPCB.getState().toString());
-            if(x.ownPCB.getState().toString().equals("RUNNING")){
-                x.ownPCB.setPC(x.ownPCB.getPC()+1);
-                x.ownPCB.setIR(m.ram.get(x.ownPCB.getPC()-1));
+            if (x.ownPCB.getState().toString().equals("RUNNING")) {
+                x.ownPCB.setPC(x.ownPCB.getPC() + 1);
+                x.ownPCB.setIR(m.ram.get(x.ownPCB.getPC() - 1));
+                this.highlightLine(x.ownPCB.getPC() - 1);
                 ejecutor.setProcess(x);
                 x = ejecutor.getProcess();
-            
+
             }
             this.initTablaProcesos();
+
         }
-        
+        this.agregarColumna();
+
         indiceProceso++;
-        if(proceso.rafaga >= proceso.getFileContent().size()){
+        if (proceso.rafaga >= proceso.getFileContent().size()) {
             m.listaProcesos.get(m.listaProcesos.indexOf(proceso)).ownPCB.setState(State.FINISHED);
             
-        }
-        else if(indiceProceso>=m.ejecucion.size()){
+            int tllegada = m.listaProcesos.get(m.listaProcesos.indexOf(proceso)).tiempoLlegada;
+            int tfin = indiceProceso;
+            int rafaga = m.listaProcesos.get(m.listaProcesos.indexOf(proceso)).rafaga;
+            int turnaround = tfin-tllegada;
+            double estadistica = (double)turnaround/(double)rafaga;
+            System.out.println("***********************************");
+            System.out.println("Estadistica para proceso "+proceso.id);
+            System.out.println("arrival time: "+tllegada);
+            System.out.println("Finish time: "+tfin);
+            System.out.println("rafaga: "+rafaga);
+            System.out.println("Turnaround Time: "+turnaround);
+            System.out.println("Tr/Ts: "+estadistica);
+            System.out.println("***********************************");
+
+            m.listaProcesos.get(m.listaProcesos.indexOf(proceso)).tiempoFin = tfin;
+            m.listaProcesos.get(m.listaProcesos.indexOf(proceso)).turnaround = turnaround;
+            m.listaProcesos.get(m.listaProcesos.indexOf(proceso)).trTs = estadistica;
+
+        } else if (indiceProceso >= m.ejecucion.size()) {
             return;
-        }
-        else{
+        } else {
             m.listaProcesos.get(m.listaProcesos.indexOf(proceso)).ownPCB.setState(State.READY);
         }
-        
-        
-    }//GEN-LAST:event_pasoActionPerformed
+
+    }
 
     /**
      * @param args the command line arguments
@@ -602,13 +839,16 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JButton auto;
     private javax.swing.JTable bcps;
     private javax.swing.JButton cargar;
+    private javax.swing.JTextPane codigoProceso;
     private javax.swing.JButton configuracion;
     private javax.swing.JButton execButton;
     private javax.swing.JScrollPane gantt;
+    private javax.swing.JTable ganttTable;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -620,6 +860,7 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JButton paso;
     private javax.swing.JTextPane procesos;
     public javax.swing.JTextPane ram;
+    private javax.swing.JScrollPane ramEspacio;
     private javax.swing.JButton reiniciar;
     private javax.swing.JButton verBCP;
     // End of variables declaration//GEN-END:variables

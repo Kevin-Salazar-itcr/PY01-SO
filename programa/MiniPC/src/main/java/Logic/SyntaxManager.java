@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  */
 public class SyntaxManager {
     private static SyntaxManager instance;  // Singleton instance
-    private final ArrayList<String> instructions;
+    private ArrayList<String> instructions;
     private final ArrayList<String> binaryInstructions;
     private final ArrayList<Integer> values;
 
@@ -40,6 +40,11 @@ public class SyntaxManager {
 
     public ArrayList<String> getInstructions(){
         return instructions;
+    }
+    
+    public void setInstructions(ArrayList<String> i){
+        this.instructions = i;
+        this.convertInstructionsToBinary();
     }
     
     public ArrayList<String> getBinaryInstructions() {

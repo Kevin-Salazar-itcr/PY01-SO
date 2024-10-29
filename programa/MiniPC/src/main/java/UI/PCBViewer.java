@@ -29,6 +29,8 @@ public class PCBViewer extends javax.swing.JFrame {
         this.ac.setText(String.valueOf(p.ownPCB.getAC()));
         this.ir.setText(p.ownPCB.getIR());
         this.pc.setText(String.valueOf(p.ownPCB.getPC()));
+        this.rafaga.setText(String.valueOf(p.rafaga));
+        this.tLlegada.setText(String.valueOf(p.tiempoLlegada));
         
         JLabel[] stackFields = {this.stack0, this.stack1, this.stack2, this.stack3, this.stack4};
         for (int i = 0; i < stackFields.length; i++) {
@@ -78,6 +80,10 @@ public class PCBViewer extends javax.swing.JFrame {
         stack1 = new javax.swing.JLabel();
         stack0 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        rafaga = new javax.swing.JTextField();
+        jLabel13 = new javax.swing.JLabel();
+        tLlegada = new javax.swing.JTextField();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -241,6 +247,14 @@ public class PCBViewer extends javax.swing.JFrame {
 
         jLabel12.setText("Stack");
 
+        jLabel11.setText("Ráfaga");
+
+        rafaga.setEditable(false);
+
+        jLabel13.setText("T. llegada");
+
+        tLlegada.setEditable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -279,7 +293,15 @@ public class PCBViewer extends javax.swing.JFrame {
                                 .addGap(27, 27, 27)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(state, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(id, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(id, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel11)
+                                    .addComponent(jLabel13, javax.swing.GroupLayout.Alignment.TRAILING))
+                                .addGap(31, 31, 31)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(rafaga, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tLlegada, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 72, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(stack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -305,7 +327,15 @@ public class PCBViewer extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(id, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(65, 65, 65)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel11)
+                    .addComponent(rafaga, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel13)
+                    .addComponent(tLlegada, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(ax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -391,7 +421,9 @@ public class PCBViewer extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -403,6 +435,7 @@ public class PCBViewer extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     public javax.swing.JTextField pc;
+    public javax.swing.JTextField rafaga;
     private javax.swing.JPanel stack;
     public javax.swing.JLabel stack0;
     public javax.swing.JLabel stack1;
@@ -410,5 +443,6 @@ public class PCBViewer extends javax.swing.JFrame {
     public javax.swing.JLabel stack3;
     public javax.swing.JLabel stack4;
     public javax.swing.JTextField state;
+    public javax.swing.JTextField tLlegada;
     // End of variables declaration//GEN-END:variables
 }

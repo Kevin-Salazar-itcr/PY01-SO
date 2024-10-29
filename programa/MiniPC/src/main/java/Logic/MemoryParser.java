@@ -26,7 +26,7 @@ public class MemoryParser {
     public TreeMap<Integer, String> ram = new TreeMap<>();
     private TreeMap<Integer, String> disco = new TreeMap<>();
     private ArrayList<Integer> particionesDinamicas = new ArrayList<>();
-    private ArrayList<Process> listaEspera = new ArrayList<>();
+    public ArrayList<Process> listaEspera = new ArrayList<>();
     public ArrayList<Process> listaProcesos = new ArrayList<>();
     
     public ArrayList<String> ejecucion = new ArrayList<>();
@@ -156,6 +156,7 @@ public class MemoryParser {
 
     public Logic.Process asignarProceso(Process proceso, ArrayList<String> codigo) {
         Logic.Process res = proceso;
+        
         if (partitioning.equals("Particionamiento fijo")) {
             res = asignacionFija(proceso, codigo);
         } 
@@ -179,11 +180,11 @@ public class MemoryParser {
             res.ownPCB.setState(State.READY);
             listaProcesos.add(res);    
         }
-        
         return res;
     }
 
     private Logic.Process asignacionFija(Process proceso, ArrayList<String> codigo) {
+        proceso.ownPCB.setIR("");
         if (ultimaPosicion + codigo.size() <= (kernelMemory + userMemory)) {
             for (int i = 0; i < codigo.size(); i++) {
                 ram.put(ultimaPosicion + i, codigo.get(i));
@@ -191,15 +192,36 @@ public class MemoryParser {
             proceso.ownPCB.setPC(ultimaPosicion);
             ultimaPosicion += codigo.size();
         } else {
+            proceso.ownPCB.setIR("NA");
             System.out.println("Memoria insuficiente en particionamiento fijo para el proceso " + proceso);
+            System.out.println(ultimaPosicion + codigo.size());
+            System.out.println(kernelMemory + userMemory);
             listaEspera.add(proceso);
         }
         return proceso;
     }
 
     private Logic.Process asignacionDinamica(Process proceso, ArrayList<String> codigo) {
-        if (!firstFit(codigo, proceso) && !bestFit(codigo, proceso) && !nextFit(codigo, proceso)) {
+        Random random = new Random();
+        proceso.ownPCB.setIR("");
+        int algoritmo = random.nextInt(3) + 1; // Genera un número aleatorio entre 1 y 3
+        boolean asignado = false;
+
+        switch (algoritmo) {
+            case 1:
+                asignado = firstFit(codigo, proceso);
+                break;
+            case 2:
+                asignado = bestFit(codigo, proceso);
+                break;
+            case 3:
+                asignado = nextFit(codigo, proceso);
+                break;
+        }
+
+        if (!asignado) {
             System.out.println("Memoria insuficiente en particionamiento dinamico para el proceso " + proceso);
+            proceso.ownPCB.setIR("NA");
             listaEspera.add(proceso);
         }
         return proceso;
@@ -293,6 +315,10 @@ public class MemoryParser {
     
     //devuelve la memoria en un string
     public String formattingRam() {
+        for(int i = 0; i<listaProcesos.size();i++){
+            ram.put(i, String.valueOf(listaProcesos.get(i).id));
+        }
+        
         StringBuilder sb = new StringBuilder();
         sb.append("**********Kernel**********\n");
         for (Integer key : ram.keySet()) {

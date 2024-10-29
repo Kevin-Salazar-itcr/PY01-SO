@@ -1,73 +1,65 @@
 package UI;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import Logic.MemoryParser;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.ArrayList;
 
 public class Gantt extends JPanel {
+    private JTable table;
+    private DefaultTableModel model;
+    private int indice = 0;
+    private ArrayList<String> tareas;
+    private ArrayList<String> valores;
+    private JScrollPane scrollPane;
 
-    private MemoryParser cpu;
-    private int timeUnitWidth = 20; // Ancho de cada unidad de tiempo
-    private int processHeight = 30; // Altura de cada proceso
-    private int currentStep = 0; // Paso actual para mostrar la ejecución paso a paso
+    public Gantt(ArrayList<String> tareas, ArrayList<String> valores) {
+        this.tareas = tareas;
+        this.valores = valores;
 
-    public Gantt(MemoryParser cpu) {
-        this.cpu = cpu;
-        
-        // Calcula el tamaño dinámico basado en la cantidad de ejecuciones y procesos
-        setPreferredSize(new Dimension(800, 2000));
-        
-        // Botón de avance de paso
-        JButton stepButton = new JButton("Step");
-        stepButton.addActionListener(new ActionListener() {
+        // Modelo de tabla con celdas no editables
+        model = new DefaultTableModel() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                if (currentStep < cpu.ejecucion.size()) {
-                    currentStep++;
-                    repaint();
-                }
+            public boolean isCellEditable(int row, int column) {
+                return false; // Ninguna celda es editable
             }
+        };
+
+        model.addColumn("Tarea");
+        valores.forEach(valor -> model.addRow(new Object[] { valor })); // Agregar filas con valores iniciales
+
+        table = new JTable(model);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setDefaultRenderer(Object.class, (tbl, value, isSelected, hasFocus, row, column) -> {
+            JLabel cell = new JLabel(value == null ? "" : value.toString(), JLabel.CENTER);
+            cell.setOpaque(true);
+            cell.setBackground("█".equals(value) ? Color.BLUE : Color.WHITE);
+            return cell;
         });
-        this.add(stepButton);
+
+        scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        JButton mostrarBtn = new JButton("Mostrar");
+        mostrarBtn.addActionListener(e -> agregarColumna());
+
+        add(scrollPane, BorderLayout.CENTER);
+        add(mostrarBtn, BorderLayout.SOUTH);
+        setSize(800, 200);
+        setVisible(true);
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        int tiempoTotal = cpu.ejecucion.size();
-        
-        // Dibujar el encabezado de tiempo
-        g.drawString("Tiempo", 10, 20);
-        for (int i = 0; i < tiempoTotal; i++) {
-            int x = 70 + i * timeUnitWidth;
-            g.drawString("" + (i + 1), x, 20);
-        }
-
-        // Dibujar los procesos
-        for (int i = 0; i < cpu.listaProcesos.size(); i++) {
-            Logic.Process p = cpu.listaProcesos.get(i);
-            g.drawString(String.valueOf(p.ownPCB.id), 10, (i + 2) * processHeight);
-        }
-
-        // Dibujar la ejecución de cada proceso hasta el paso actual
-        for (int tiempo = 0; tiempo < currentStep; tiempo++) {
-            
-            String procesoNombre = cpu.ejecucion.get(tiempo);
-            for (int i = 0; i < cpu.listaProcesos.size(); i++) {
-                if (String.valueOf(cpu.listaProcesos.get(i).ownPCB.id).equals(procesoNombre)) {
-                    int x = 70 + tiempo * timeUnitWidth;
-                    int y = (i + 1) * processHeight;
-                    g.setColor(Color.GREEN);
-                    g.fillRect(x, y + 10, timeUnitWidth, processHeight - 10);
-                    g.setColor(Color.BLACK);
-                    g.drawRect(x, y + 10, timeUnitWidth, processHeight - 10);
+    private void agregarColumna() {
+        if (indice < tareas.size()) {
+            model.addColumn(String.valueOf(indice + 1));
+            String tarea = tareas.get(indice);
+            for (int i = 0; i < valores.size(); i++) {
+                if (valores.get(i).equals(tarea)) {
+                    model.setValueAt("█", i, model.getColumnCount() - 1);
+                    break;
                 }
             }
+            indice++;
+            scrollPane.getHorizontalScrollBar().setValue(scrollPane.getHorizontalScrollBar().getMaximum());
         }
     }
 }

@@ -19,9 +19,12 @@ public class Process {
     public long totalTime = 0; 
     public int id;
     
-    public int rafaga;
-    public int tiempoLlegada;
-
+    public int rafaga;        // service time (ts)
+    public int tiempoLlegada; // arrival time
+    public int tiempoFin;     // finish time
+    public int turnaround;    // fin-arrivo
+    public double trTs;          // turnaround/rafaga
+    
     public PCB ownPCB;
     
     public Process(String file){

@@ -1,11 +1,11 @@
 UI\PCBViewer$2.class
 Logic\MemoryParser.class
+UI\Interfaz$11.class
 UI\Interfaz$4.class
 UI\Terminal.class
 UI\PCBViewer$7.class
 Logic\MemoryParser$1.class
 Logic\SyntaxManager.class
-Logic\test.class
 UI\Gantt$1.class
 UI\Interfaz$9.class
 UI\PCBViewer$4.class
@@ -22,8 +22,8 @@ UI\Interfaz$10.class
 Logic\Process.class
 UI\Terminal$1.class
 UI\Config$4.class
-Logic\CPU.class
 UI\PCBViewer$8.class
+UI\Interfaz$12.class
 UI\Interfaz$3.class
 UI\PCBViewer$3.class
 UI\CLI.class
@@ -33,6 +33,7 @@ UI\CLI$1.class
 UI\Interfaz$5.class
 Logic\MemoryParser$2.class
 UI\Config$1.class
+UI\Estadisticas.class
 UI\Interfaz.class
 Logic\Ejecutor.class
 UI\Interfaz$7.class
