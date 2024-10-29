@@ -21,9 +21,9 @@ public class Terminal extends javax.swing.JFrame {
     private static int promptIndex;
     public boolean entry;
     public String text;
-    public MainFrame m;
-    public Terminal(MainFrame m) {
-        this.m=m;
+    //public MainFrame m;
+    public Terminal() {
+        //this.m=m;
         text = "";
         entry = false;
         initComponents();
@@ -56,7 +56,7 @@ public class Terminal extends javax.swing.JFrame {
                             entry = false;
                             terminal.append("\n> ");
                             promptIndex = terminal.getText().length();
-                            m.listen(returnValue());
+//                            m.listen(returnValue());
                         }
                         else{
                             terminal.append("\nError: Command not found...\n> ");

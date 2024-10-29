@@ -7,7 +7,6 @@ package UI;
 import Logic.LoadFile;
 import Logic.MemoryParser;
 import Logic.State;
-import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -26,14 +25,20 @@ public class Interfaz extends javax.swing.JFrame {
     public int virtual = 10 ;
     public int particion = 4;
     public String modo = "Particionamiento fijo";
+    public int quantum;
+    
     public MemoryParser m;
     
+    int indiceProceso = 0;
+    
+    public PCBViewer pcb = new PCBViewer();
     /**
      * Creates new form Interfaz
      */
     public Interfaz() {
         initComponents();
         this.auto.setVisible(false);
+        this.paso.setVisible(false);
         leerProperties();
         this.m = new MemoryParser(user, kernel, disc, virtual, modo, particion);
         this.ram.setText(this.m.formattingRam());
@@ -53,9 +58,9 @@ public class Interfaz extends javax.swing.JFrame {
             this.virtual = Integer.parseInt(properties.getProperty("memoryVirtual"));
             this.particion = Integer.parseInt(properties.getProperty("PartitionSize"));
             this.modo = properties.getProperty("Type");
+            this.quantum = Integer.parseInt(properties.getProperty("Quantum"));
             
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
     
@@ -90,6 +95,7 @@ public class Interfaz extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         algoritmo = new javax.swing.JComboBox<>();
         configuracion = new javax.swing.JButton();
+        paso = new javax.swing.JButton();
         auto = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -234,6 +240,13 @@ public class Interfaz extends javax.swing.JFrame {
             }
         });
 
+        paso.setText("paso a paso");
+        paso.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pasoActionPerformed(evt);
+            }
+        });
+
         auto.setText("Auto");
         auto.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -276,7 +289,9 @@ public class Interfaz extends javax.swing.JFrame {
                                 .addComponent(algoritmo, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(36, 36, 36)
                                 .addComponent(execButton, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(110, 110, 110)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(paso, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(auto, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(26, 26, 26))))
         );
@@ -289,7 +304,8 @@ public class Interfaz extends javax.swing.JFrame {
                             .addContainerGap()
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(execButton)
-                                .addComponent(algoritmo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(algoritmo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(paso)))
                         .addGroup(layout.createSequentialGroup()
                             .addGap(12, 12, 12)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -316,17 +332,43 @@ public class Interfaz extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    public Logic.Process buscarProceso2(int i){
+        Logic.Process actual = null;
+        int x = 0;
+        for(Logic.Process p: this.m.listaProcesos){
+            if(p.id == i){
+                actual = p;
+                break;
+            }
+            x++;
+        }
+        return actual;
+    }
+    
     private void verBCPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verBCPActionPerformed
+        mostrarPCB();
+    }//GEN-LAST:event_verBCPActionPerformed
+
+    public void mostrarPCB(){
         int selectedRow = bcps.getSelectedRow(); // Obtener el índice de la fila seleccionada
 
         if (selectedRow != -1) { // Verificar que haya una fila seleccionada
-            Object bcpId = bcps.getValueAt(selectedRow, 0); // Obtener el valor en la columna 'BCP ID' (índice 0)
+            int bcpId = (int) bcps.getValueAt(selectedRow, 0); // Obtener el valor en la columna 'BCP ID' (índice 0)
             System.out.println("BCP ID seleccionado: " + bcpId);
+            this.pcb.update(buscarProceso2(bcpId));
+            this.pcb.state.setText(bcps.getValueAt(selectedRow, 2).toString());
+            if(pcb.isVisible()){
+                pcb.repaint();
+                pcb.setVisible(true);
+            }
+            else{
+                this.pcb.setVisible(true);
+            }
         } else {
             System.out.println("No se ha seleccionado ninguna fila.");
         }
-    }//GEN-LAST:event_verBCPActionPerformed
-
+    }
+    
     private void reiniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reiniciarActionPerformed
         reset();
     }//GEN-LAST:event_reiniciarActionPerformed
@@ -345,6 +387,21 @@ public class Interfaz extends javax.swing.JFrame {
             }
         }
     }
+    public void editarFilaPorId(int bcpId, String nuevoEstado) {
+        DefaultTableModel model = (DefaultTableModel) bcps.getModel();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            if ((int) model.getValueAt(i, 0) == bcpId) { // Verifica si el valor de BCP ID coincide
+                model.setValueAt(nuevoEstado, i, 2); // Actualiza la tercera columna con el nuevo estado
+                break; // Detiene el bucle después de encontrar y editar la fila
+            }
+        }
+    }
+
+    public void limpiarTabla() {
+        DefaultTableModel model = (DefaultTableModel) bcps.getModel();
+        model.setRowCount(0); // Establece el número de filas en 0, eliminando todas las filas
+    }
+
 
     public void reset(){
         this.setVisible(false);
@@ -354,50 +411,48 @@ public class Interfaz extends javax.swing.JFrame {
     }
     
     private void execButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_execButtonActionPerformed
-        this.algoritmo.setEnabled(!algoritmo.isEnabled());
-        this.auto.setVisible(!auto.isVisible());
+        if(this.m.listaProcesos.isEmpty()){
+            return;
+        }
+        this.algoritmo.setEnabled(false);
+        this.auto.setVisible(true);
+        this.execButton.setEnabled(false);
+        this.paso.setVisible(true);
         
         switch(this.algoritmo.getSelectedItem().toString()){
             case "FCFS" -> this.m.FCFS();
             case "SJF" -> this.m.SJF();
             case "SRT" -> this.m.SRT();
-            case "RR" -> this.m.RoundRobin(1);
+            case "RR" -> this.m.RoundRobin(this.quantum);
             default -> this.m.HRRN();
         }
         
         System.out.println(this.m.ejecucion.toString());
-        Logic.Process actual = null;
-        int indice = 0;
-        int contador = 0;
-        // buscar el proceso 1
-        for(Logic.Process p: this.m.listaProcesos){
-            if(p.ownPCB.id == Integer.parseInt(m.ejecucion.get(indice))){
-                actual = p;
-                actual.ownPCB.setState(State.RUNNING);
-            }
-        }
-        for(String s: m.ejecucion){
-            
-        }
-        
-        /*
-        1 buscar el primer proceso
-        2 ponerlo en running
-        2.5 guardar el primer objeto de la lista de ejecuciones
-        3 ir iterando sobre la lista de ejecucion
-            si el valor cambia, pregunta si el contador 
-        */
-        
-        
-        
-        
-        
-        
-        //mostrarGantt();
+                //mostrarGantt();
     }//GEN-LAST:event_execButtonActionPerformed
 
-    public void ejecucion(){
-        
+    public Logic.Process buscarProceso(int i){
+        Logic.Process actual = null;
+        int x = 0;
+        for(Logic.Process p: this.m.listaProcesos){
+            if(p.id == i){
+                actual = p;
+                actual.ownPCB.setState(State.RUNNING);
+                actual.rafaga++;
+                break;
+            }
+            x++;
+        }
+        //m.listaProcesos.add(x, actual);
+        return actual;
+    }
+
+    public void initTablaProcesos(){
+        String res = "";
+        for(Logic.Process x: m.listaProcesos){
+            res+= "Proceso "+ x.id+"->"+x.ownPCB.getState().toString()+"\n";
+        }
+        this.procesos.setText(res);
     }
     
     public void mostrarGantt() {
@@ -422,6 +477,7 @@ public class Interfaz extends javax.swing.JFrame {
         
         ram.setText(m.formattingRam());
         memoria.setText(m.formattingDisc());
+        this.initTablaProcesos();
     }//GEN-LAST:event_cargarActionPerformed
 
     private void algoritmoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_algoritmoItemStateChanged
@@ -430,7 +486,7 @@ public class Interfaz extends javax.swing.JFrame {
 
     private void configuracionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configuracionActionPerformed
         Config co = new Config(this);
-        co.setCurrentValues(kernel, user, disc, virtual, particion, modo);
+        co.setCurrentValues(kernel, user, disc, virtual, particion, modo, quantum);
         co.seteo();
         co.setVisible(true);
     }//GEN-LAST:event_configuracionActionPerformed
@@ -438,6 +494,66 @@ public class Interfaz extends javax.swing.JFrame {
     private void autoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_autoActionPerformed
+
+    private void pasoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pasoActionPerformed
+        String actual;
+        
+        if(pcb.isVisible()){
+            pcb.repaint();
+            pcb.setVisible(true);
+        }
+        if(m.listaProcesos.isEmpty()){
+            return;
+        }
+        try{
+            actual = m.ejecucion.get(indiceProceso);
+        }catch(Exception e){
+            this.execButton.setEnabled(true);
+            this.algoritmo.setEnabled(true);
+            this.auto.setVisible(false);
+            this.paso.setVisible(false);
+            for(Logic.Process x: m.listaProcesos){
+                if(x.ownPCB.getState().toString().equals("RUNNING")){x.ownPCB.setState(State.FINISHED);}
+                this.editarFilaPorId(x.id, x.ownPCB.getState().toString());
+                this.initTablaProcesos();
+                
+            }
+            m.limpiar();
+            System.out.println("limpio");
+            this.ram.setText(m.formattingRam());
+            this.limpiarTabla();
+            this.m.listaProcesos.clear();
+            this.m.ejecucion.clear();
+            this.indiceProceso = 0;
+            return;
+        }
+        Logic.Process proceso;
+        try{
+            proceso = this.buscarProceso(Integer.parseInt(actual));
+        }
+        catch(Exception e){
+            return;
+        }
+        for(Logic.Process x: m.listaProcesos){
+            this.editarFilaPorId(x.id, x.ownPCB.getState().toString());
+            if(x.ownPCB.getState().toString().equals("RUNNING")){x.ownPCB.setPC(x.ownPCB.getPC()+1);}
+            this.initTablaProcesos();
+        }
+        
+        indiceProceso++;
+        if(proceso.rafaga >= proceso.getFileContent().size()){
+            m.listaProcesos.get(m.listaProcesos.indexOf(proceso)).ownPCB.setState(State.FINISHED);
+            
+        }
+        else if(indiceProceso>=m.ejecucion.size()){
+            return;
+        }
+        else{
+            m.listaProcesos.get(m.listaProcesos.indexOf(proceso)).ownPCB.setState(State.READY);
+        }
+        
+        
+    }//GEN-LAST:event_pasoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -494,6 +610,7 @@ public class Interfaz extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     public javax.swing.JTextPane memoria;
+    private javax.swing.JButton paso;
     private javax.swing.JTextPane procesos;
     public javax.swing.JTextPane ram;
     private javax.swing.JButton reiniciar;

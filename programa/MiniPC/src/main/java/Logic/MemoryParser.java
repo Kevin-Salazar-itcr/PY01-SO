@@ -55,6 +55,20 @@ public class MemoryParser {
         inicializarParticionesDinamicas();
     }
     
+    public void limpiar(){
+        this.userStartIndex = this.kernelMemory;
+        this.ultimaPosicion = this.userStartIndex;
+        ram.clear();
+        for (int i = 0; i < userMemory+kernelMemory; i++) {
+            ram.put(i, "libre");
+        }
+        
+        for (int i = 0; i < disc; i++) {
+            disco.put(i, "libre");
+        }
+        inicializarParticionesDinamicas();
+    }
+    
     private void inicializarParticionesDinamicas() {
         int tamano = 4;
         int particiones = 0;
@@ -326,7 +340,6 @@ public class MemoryParser {
         int tiempo = 1;
 
         for (Logic.Process procs : listaProcesos) {
-            System.out.println(procs.tiempoLlegada);
             while (procs.rafaga > 0) {
                 ejecucion.add(String.valueOf(procs.ownPCB.id));
                 procs.rafaga -= 1;
@@ -440,7 +453,6 @@ public class MemoryParser {
                 procs = colaProcesos.poll();
                 tiempoRestanteQuantum = quantum;
             }
-            System.out.println("aqui");
             ejecucion.add(String.valueOf(procs.ownPCB.id));
             procs.rafaga -= 1;
             tiempoEjecucion++;

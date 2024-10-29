@@ -17,6 +17,7 @@ public class Process {
     public String startHour;
     public String finsHour;
     public long totalTime = 0; 
+    public int id;
     
     public int rafaga;
     public int tiempoLlegada;
@@ -27,6 +28,7 @@ public class Process {
         setFileContent(new ArrayList<>(Arrays.asList(file.split("\n"))));
         this.ownPCB = new PCB(State.NEW, getFileContent().size());
         this.rafaga = fileContent.size();
+        this.id = ownPCB.id;
     }
     
     public final ArrayList<String> getFileContent(){

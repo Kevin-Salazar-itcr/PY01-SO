@@ -25,6 +25,7 @@ public final class Config extends javax.swing.JFrame {
     private int mem2 = 40;
     private int memV = 10;
     private int particion = 4;
+    private int quantum = 1;
     private String particionamiento = "Particionamiento fijo";
     
     public Config(Interfaz f) {
@@ -39,6 +40,7 @@ public final class Config extends javax.swing.JFrame {
         this.tam.setText(String.valueOf(particion));  
         this.tam.setVisible(false);
         this.tamLabel.setVisible(false);
+        this.quantumSpace.setText(String.valueOf(quantum));
     }
     public void seteo(){
         this.memPrinc.setText(String.valueOf(sysSize+usrSize));
@@ -50,9 +52,10 @@ public final class Config extends javax.swing.JFrame {
         this.tam.setVisible(particionamiento.equals("Particionamiento dinamico"));
         this.divMemoria.setSelectedItem(particionamiento);
         this.tamLabel.setVisible(particionamiento.equals("Particionamiento dinamico"));
+        this.quantumSpace.setText(String.valueOf(quantum));
     }
     
-    public void setCurrentValues(int sys, int usr, int mem2, int memv, int particion, String particionamiento){
+    public void setCurrentValues(int sys, int usr, int mem2, int memv, int particion, String particionamiento, int quantum){
         this.sysSize = sys;
         this.usrSize = usr;
         this.memoria = sys+usr;
@@ -60,6 +63,7 @@ public final class Config extends javax.swing.JFrame {
         this.memV = memv;
         this.particion = particion;
         this.particionamiento = particionamiento;
+        this.quantum=quantum;
         modificarProperties();
     }
     /**
@@ -89,6 +93,8 @@ public final class Config extends javax.swing.JFrame {
         tamLabel = new javax.swing.JLabel();
         tam = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
+        tamLabel1 = new javax.swing.JLabel();
+        quantumSpace = new javax.swing.JTextField();
 
         jLabel1.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
         jLabel1.setText("Preferencias");
@@ -194,6 +200,8 @@ public final class Config extends javax.swing.JFrame {
 
         jLabel7.setText("Memoria virtual");
 
+        tamLabel1.setText("Quantum (para round robin");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -219,24 +227,20 @@ public final class Config extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(47, 47, 47)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(divMemoria, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(18, Short.MAX_VALUE))))
+                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(divMemoria, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(79, 79, 79)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(79, 79, 79)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(tam, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tamLabel))))
-                        .addContainerGap())))
+                            .addComponent(tam, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tamLabel)
+                            .addComponent(quantumSpace, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tamLabel1))))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -255,6 +259,10 @@ public final class Config extends javax.swing.JFrame {
                         .addComponent(jLabel5)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
+                                .addGap(2, 2, 2)
+                                .addComponent(tamLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(quantumSpace, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jButton1)
@@ -297,6 +305,7 @@ public final class Config extends javax.swing.JFrame {
             this.memV = Integer.parseInt(this.memVirtual.getText());
             this.particion = Integer.parseInt(this.tam.getText());
             this.particionamiento = this.divMemoria.getSelectedItem().toString();
+            this.quantum = Integer.parseInt(this.quantumSpace.getText());
             modificarProperties();
             this.current.reset();
             
@@ -369,6 +378,7 @@ public final class Config extends javax.swing.JFrame {
             this.memV = Integer.parseInt(properties.getProperty("memoryVirtual", String.valueOf(this.memV)));
             this.particion = Integer.parseInt(properties.getProperty("PartitionSize", String.valueOf(this.particion)));
             this.particionamiento = properties.getProperty("Type", this.particionamiento);
+            this.quantum = Integer.parseInt(properties.getProperty("Quantum", String.valueOf(this.quantum)));
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -387,6 +397,8 @@ public final class Config extends javax.swing.JFrame {
         properties.setProperty("memoryVirtual", String.valueOf(Integer.parseInt(this.memVirtual.getText())));
         properties.setProperty("PartitionSize", String.valueOf(Integer.parseInt(this.tam.getText())));
         properties.setProperty("Type", this.particionamiento);
+        properties.setProperty("PartitionSize", String.valueOf(Integer.parseInt(this.quantumSpace.getText())));
+        
 
         try (FileOutputStream output = new FileOutputStream(System.getProperty("user.dir")+"\\config.properties")) {
             properties.store(output, "Actualización de configuración");
@@ -411,8 +423,10 @@ public final class Config extends javax.swing.JFrame {
     private javax.swing.JTextField memSec;
     private javax.swing.JTextField memVirtual;
     private javax.swing.JTextField os;
+    private javax.swing.JTextField quantumSpace;
     private javax.swing.JTextField tam;
     private javax.swing.JLabel tamLabel;
+    private javax.swing.JLabel tamLabel1;
     private javax.swing.JTextField usr;
     // End of variables declaration//GEN-END:variables
 }
